@@ -6,7 +6,7 @@
     "build": "tsc",
     "lint": "eslint src --ext ts",
     "lint-fix": "npm run lint -- --fix",
-    "start": "nodemon --watch \"src/**/*.ts\" --exec \"ts-node src/bot.ts\""
+    "start": "nodemon --watch \"src/**/*.ts\" -e ts --exec \"ts-node src/bot.ts\""
   },
   "repository": {
     "type": "git",
