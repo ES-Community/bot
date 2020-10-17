@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "tsc",
+    "heroku-postbuild": "npm run build",
     "lint": "eslint src --ext ts",
     "lint-fix": "npm run lint -- --fix",
     "start": "nodemon --watch \"src/**/*.ts\" -e ts --exec \"ts-node src/bot.ts\""
