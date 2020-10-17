@@ -2,6 +2,6 @@
   "include": ["src/**/*.ts"],
   "compilerOptions": {
     "strict": true,
-    "outDir": "build"
+    "outDir": "build",
   }
 }
