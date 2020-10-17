@@ -1,9 +1,13 @@
+import 'make-promises-safe';
+import { Client } from 'discord.js';
 import * as Dotenv from 'dotenv';
 
 Dotenv.config();
 
-console.log('Started bot');
+const client = new Client();
 
-setInterval(() => {
-  console.log('Hello ES Community!');
-}, 10 * 1000);
+client.on('ready', () => {
+  console.log('Bot is ready');
+});
+
+client.login(process.env.DISCORD_TOKEN);
