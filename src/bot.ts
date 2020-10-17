@@ -5,5 +5,5 @@ Dotenv.config();
 console.log('Started bot');
 
 setInterval(() => {
-  console.log('Hello world');
+  console.log('Hello ES Community!');
 }, 10 * 1000);
