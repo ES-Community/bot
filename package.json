@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "build": "tsc",
+    "check-types": "tsc --noEmit",
     "heroku-postbuild": "npm run build",
     "lint": "eslint src --ext ts",
     "lint-fix": "npm run lint -- --fix",
-    "start": "nodemon --watch \"src/**/*.ts\" -e ts --exec \"ts-node src/bot.ts\""
+    "start": "nodemon --watch \"src/**/*.ts\" -e ts --exec \"ts-node src/bot.ts\"",
+    "test": "npm run lint && npm run check-types"
   },
   "repository": {
     "type": "git",
@@ -25,6 +27,7 @@
   },
   "devDependencies": {
     "@types/node": "^14.11.8",
+    "@types/ws": "^7.2.7",
     "@typescript-eslint/eslint-plugin": "^4.4.1",
     "@typescript-eslint/parser": "^4.4.1",
     "eslint": "^7.11.0",
