@@ -10,11 +10,18 @@
     "lint": "eslint src --ext ts",
     "lint-fix": "npm run lint -- --fix",
     "start": "nodemon --watch \"src/**/*.ts\" -e ts --exec \"ts-node src/bot.ts\"",
-    "test": "npm run test-only && npm run lint && npm run check-types"
+    "test": "npm run test-only && npm run lint && npm run check-types",
+    "postinstall": "npx husky install"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ES-Community/bot.git"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm test",
+      "pre-push": "npm test"
+    }
   },
   "license": "MIT",
   "bugs": {
@@ -33,6 +40,7 @@
     "@typescript-eslint/eslint-plugin": "^4.4.1",
     "@typescript-eslint/parser": "^4.4.1",
     "eslint": "^7.11.0",
+    "husky": "^4.3.0",
     "jest": "^26.5.3",
     "nodemon": "^2.0.5",
     "prettier": "^2.1.2",
