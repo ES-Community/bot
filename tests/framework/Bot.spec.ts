@@ -19,3 +19,8 @@ test('bot.stop() throws if it was not started', () => {
   const bot = new Bot(dummyOptions);
   expect(() => bot.stop()).toThrow(/was not started/);
 });
+
+test('bot.client throws if it was not started', () => {
+  const bot = new Bot(dummyOptions);
+  expect(() => bot.client).toThrow(/was not started/);
+});

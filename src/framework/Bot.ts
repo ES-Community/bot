@@ -7,37 +7,41 @@ export interface BotOptions {
 
 export default class Bot {
   private token?: string;
-  // @ts-expect-error: The client must be constructed when "start()" is called,
-  // because it keeps the process alive.
-  private client: Client;
-  private started = false;
+  private _client: Client | null;
 
   public logger: pino.Logger;
 
   public constructor(options: BotOptions = {}) {
     this.token = options.token;
+    this._client = null;
     this.logger = pino();
   }
 
+  public get client(): Client {
+    if (!this._client) {
+      throw new Error('Bot was not started');
+    }
+    return this._client;
+  }
+
   public async start(): Promise<void> {
-    if (this.started) {
+    if (this._client) {
       throw new Error('Bot can only be started once');
     }
-    this.started = true;
-    this.client = new Client();
+    this._client = new Client();
     try {
       await this.client.login(this.token);
     } catch (error) {
-      this.started = false;
+      this._client = null;
       throw error;
     }
   }
 
   public stop(): void {
-    if (!this.started) {
+    if (!this._client) {
       throw new Error('Bot was not started');
     }
-    this.client.destroy();
-    this.started = false;
+    this._client.destroy();
+    this._client = null;
   }
 }
