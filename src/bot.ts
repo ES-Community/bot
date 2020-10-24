@@ -1,13 +1,12 @@
 import 'make-promises-safe';
-import { Client } from 'discord.js';
 import * as Dotenv from 'dotenv';
+
+import Bot from './framework/Bot';
 
 Dotenv.config();
 
-const client = new Client();
+const bot = new Bot({ token: process.env.DISCORD_TOKEN });
 
-client.on('ready', () => {
-  console.log('Bot is ready');
+bot.start().then(() => {
+  bot.logger.info('Bot started');
 });
-
-client.login(process.env.DISCORD_TOKEN);
