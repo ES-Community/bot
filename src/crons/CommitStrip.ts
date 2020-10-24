@@ -1,7 +1,7 @@
-import { Client, MessageEmbed, TextChannel } from 'discord.js';
+import { MessageEmbed } from 'discord.js';
 import got from 'got';
 
-import { Cron } from '../framework';
+import { Cron, findTextChannelByName } from '../framework';
 
 export default new Cron({
   enabled: true,
@@ -14,9 +14,13 @@ export default new Cron({
     if (!latestCommitStrip) {
       return;
     }
-
     context.logger.info(`Found a new CommitStrip (${latestCommitStrip.id})`);
-    const channel = getGifChannel(context.client);
+
+    const channel = findTextChannelByName(context.client, 'gif');
+    if (!channel) {
+      throw new Error('found no #gif channel');
+    }
+
     await channel.send(
       `${latestCommitStrip.title} - ${latestCommitStrip.link}`,
       new MessageEmbed({ image: { url: latestCommitStrip.imageUrl } }),
@@ -106,20 +110,4 @@ async function getRecentCommitStrip(now: Date): Promise<CommitStrip | null> {
     title: strip.title.rendered,
     imageUrl: urlMatch[1],
   };
-}
-
-/**
- * Searches for and returns the #gif channel of the guild that the bot is
- * connected to.
- */
-function getGifChannel(client: Client): TextChannel {
-  const guild = client.guilds.cache.first();
-  const channel = guild?.channels.cache.find(
-    (channel) => channel.type === 'text' && channel.name === 'gif',
-  );
-  if (channel && channel instanceof TextChannel) {
-    return channel;
-  } else {
-    throw new Error(`found no #gif channel`);
-  }
 }
