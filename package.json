@@ -3,14 +3,15 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.prod.json",
     "check-types": "tsc --noEmit",
-    "test-only": "jest",
     "heroku-postbuild": "npm run build",
     "lint": "eslint src --ext ts",
     "lint-fix": "npm run lint -- --fix",
     "start": "nodemon --watch \"src/**/*.ts\" -e ts --exec \"ts-node src/bot.ts\"",
-    "test": "npm run test-only && npm run lint && npm run check-types"
+    "test": "npm run test-only && npm run lint && npm run check-types",
+    "test-only": "jest",
+    "test-coverage": "jest --coverage"
   },
   "repository": {
     "type": "git",
@@ -24,11 +25,13 @@
   "dependencies": {
     "discord.js": "^12.3.1",
     "dotenv": "^8.2.0",
-    "make-promises-safe": "^5.1.0"
+    "make-promises-safe": "^5.1.0",
+    "pino": "^6.7.0"
   },
   "devDependencies": {
     "@types/jest": "^26.0.14",
     "@types/node": "^14.11.8",
+    "@types/pino": "^6.3.3",
     "@types/ws": "^7.2.7",
     "@typescript-eslint/eslint-plugin": "^4.4.1",
     "@typescript-eslint/parser": "^4.4.1",
