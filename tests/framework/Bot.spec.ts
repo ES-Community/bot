@@ -1,4 +1,4 @@
-import Bot from '#src/framework/Bot';
+import { Bot } from '#src/framework';
 
 const dummyOptions = { token: 'dummy' };
 
