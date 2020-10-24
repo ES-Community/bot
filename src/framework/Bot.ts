@@ -1,3 +1,4 @@
+import { once } from 'events';
 import fs from 'fs';
 import path from 'path';
 
@@ -112,7 +113,10 @@ export class Bot {
     }
     this._client = new Client();
     try {
-      await this.client.login(this.token);
+      await Promise.all([
+        this.client.login(this.token),
+        once(this.client, 'ready'),
+      ]);
       this.startCrons();
     } catch (error) {
       this._client = null;
