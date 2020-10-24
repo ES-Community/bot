@@ -8,7 +8,7 @@
     "heroku-postbuild": "npm run build",
     "lint": "eslint src --ext ts",
     "lint-fix": "npm run lint -- --fix",
-    "start": "nodemon --watch \"src/**/*.ts\" -e ts --exec \"ts-node src/bot.ts\"",
+    "start": "nodemon --watch \"src/**/*.ts\" -e ts --exec \"ts-node src/bot.ts | pino-pretty\"",
     "test": "npm run test-only && npm run lint && npm run check-types",
     "test-only": "jest",
     "test-coverage": "jest --coverage"
@@ -38,6 +38,7 @@
     "eslint": "^7.11.0",
     "jest": "^26.5.3",
     "nodemon": "^2.0.5",
+    "pino-pretty": "^4.3.0",
     "prettier": "^2.1.2",
     "ts-jest": "^26.4.1",
     "ts-node": "^9.0.0",
