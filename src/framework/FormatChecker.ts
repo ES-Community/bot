@@ -1,7 +1,8 @@
 import { Base, BaseConfig } from "./Base"
 import { Bot } from "./Bot"
 import { findTextChannelByName } from "./helpers"
-import { Client, Message, User } from "discord.js"
+import { Message, User } from "discord.js"
+import uuid from "@lukeed/uuid"
 
 export interface FormatCheckerConfig extends BaseConfig {
   channelName: string;
@@ -16,7 +17,7 @@ export default class FormatChecker extends Base {
   private readonly examples?: string[];
   private readonly postHandler?: (author: User) => Promise<void>;
 
-  private client: Client | undefined;
+  private bot: Bot | undefined;
 
   public constructor(config: FormatCheckerConfig) {
     super(config)
@@ -27,10 +28,17 @@ export default class FormatChecker extends Base {
   }
 
   async _messageHandler(message: Message): Promise<void> {
-    if(this.client === undefined) return;
-    if(message.channel.id !== findTextChannelByName(this.client, this.channelName)?.id) return;
+    if(this.bot === undefined) return;
+    if(message.channel.id !== findTextChannelByName(this.bot.client, this.channelName)?.id) return;
     if(this.regexp.test(message.cleanContent) === true) return;
-    
+
+    const logger = this.bot.logger.child({
+      id: uuid(),
+      type: 'FormatChecker',
+      name: this.name,
+    });
+    logger.debug('bad format detected')
+
     const { cleanContent, author } = message
 
     await message.delete()
@@ -45,14 +53,16 @@ export default class FormatChecker extends Base {
       ] : []
     ]
     await author.send(warningContent.join('\n')).then(warning => warning.suppressEmbeds(true))
+    logger.debug('warning message sent')
 
     if(this.postHandler === undefined) return;
+    logger.debug('execute postHandler')
     await this.postHandler(author)
   }
 
   public start(bot: Bot): void {
-    this.client = bot.client
-    this.client.on('message', this._messageHandler.bind(this))
+    this.bot = bot
+    this.bot.client.on('message', this._messageHandler.bind(this))
   }
 
   public stop(bot: Bot): void {
