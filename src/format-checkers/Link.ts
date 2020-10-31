@@ -1,6 +1,5 @@
 import FormatChecker from "../framework/FormatChecker"
 import createRegExp from "emoji-regex"
-import { Message, User } from "discord.js"
 
 const textRegexp = '\\*\\*[A-Z]+\\*\\*'
 // todo: limiter aux emojis disponibles sur le serveur
