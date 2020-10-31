@@ -25,6 +25,8 @@ export default class FormatChecker extends Base {
     this.regexp = config.regexp
     this.postHandler = config.postHandler;
     this.examples = config.examples
+
+    this._messageHandler = this._messageHandler.bind(this)
   }
 
   async _messageHandler(message: Message): Promise<void> {
@@ -62,10 +64,10 @@ export default class FormatChecker extends Base {
 
   public start(bot: Bot): void {
     this.bot = bot
-    this.bot.client.on('message', this._messageHandler.bind(this))
+    this.bot.client.on('message', this._messageHandler)
   }
 
   public stop(bot: Bot): void {
-    bot.client.off('message', this._messageHandler.bind(this))
+    bot.client.off('message', this._messageHandler)
   }
 }
