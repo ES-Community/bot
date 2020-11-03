@@ -31,7 +31,8 @@ export default class FormatChecker extends Base {
 
   async _messageHandler(message: Message): Promise<void> {
     if(this.bot === undefined) return;
-    if(message.channel.id !== findTextChannelByName(this.bot.client, this.channelName)?.id) return;
+    const client = this.bot.client 
+    if(message.channel.id !== findTextChannelByName(client, this.channelName)?.id) return;
     if(this.regexp.test(message.cleanContent) === true) return;
 
     const logger = this.bot.logger.child({
@@ -54,7 +55,20 @@ export default class FormatChecker extends Base {
         ...this.examples.map(example => `\`\`\`${example}\`\`\``)
       ] : []
     ]
-    await author.send(warningContent.join('\n')).then(warning => warning.suppressEmbeds(true))
+    
+    try {
+    await author.send(warningContent.join('\n'))
+      .then(warning => warning.suppressEmbeds(true))
+    } catch(err) {
+      logger.error('failed to send private message to user', err)
+      const channel = findTextChannelByName(client, 'logs')
+      if(channel === undefined) return logger.fatal('text channel not found: logs')
+      warningContent.unshift(
+        author.toString(),
+        ',\n'
+      )
+      channel.send(warningContent.join('\n'))
+    }
     logger.debug('warning message sent')
 
     if(this.postHandler === undefined) return;
