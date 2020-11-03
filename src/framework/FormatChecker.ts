@@ -64,8 +64,7 @@ export default class FormatChecker extends Base {
       const channel = findTextChannelByName(client, 'logs')
       if(channel === undefined) return logger.fatal('text channel not found: logs')
       warningContent.unshift(
-        author.toString(),
-        ',\n'
+        `${author.toString()}:`,
       )
       channel.send(warningContent.join('\n'))
     }
