@@ -1,7 +1,7 @@
 import { Base, BaseConfig } from './Base';
 import { Bot } from './Bot';
 import { findTextChannelByName } from './helpers';
-import { Message, User } from 'discord.js';
+import { Message } from 'discord.js';
 import uuid from '@lukeed/uuid';
 
 export interface FormatCheckerConfig extends BaseConfig {
