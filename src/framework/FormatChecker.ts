@@ -47,7 +47,7 @@ export default class FormatChecker extends Base {
     await message.delete()
     const warningContent = [
       'Bonjour,',
-      `Le message que vous avez posté dans #${this.channelName} est incorrectement formaté, il a donc été supprimé.`,
+      `Le message que vous avez posté dans ${message.channel} est incorrectement formaté, il a donc été supprimé.`,
       'Pour rappel, voici le message que vous aviez envoyé :',
       `\`\`\`${cleanContent}\`\`\``,
       ...this.examples !== undefined ? [
@@ -60,7 +60,7 @@ export default class FormatChecker extends Base {
     await author.send(warningContent.join('\n'))
       .then(warning => warning.suppressEmbeds(true))
     } catch(err) {
-      logger.error('failed to send private message to user', err)
+      logger.error(err, 'failed to send private message to user %s', author.tag)
       const channel = findTextChannelByName(client, 'logs')
       if(channel === undefined) return logger.fatal('text channel not found: logs')
       warningContent.unshift(
