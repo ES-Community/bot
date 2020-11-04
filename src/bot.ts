@@ -10,7 +10,7 @@ Dotenv.config();
 const bot = new Bot({
   token: process.env.DISCORD_TOKEN,
   crons: path.join(__dirname, 'crons'),
-  formatCheckers: path.join(__dirname, 'format-checkers')
+  formatCheckers: path.join(__dirname, 'format-checkers'),
 });
 
 bot.start().then(() => {

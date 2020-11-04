@@ -7,7 +7,7 @@ import pino from 'pino';
 
 import { Cron } from './Cron';
 import { Base, BaseConfig } from './Base';
-import FormatChecker from './FormatChecker'
+import FormatChecker from './FormatChecker';
 
 export interface BotOptions {
   /**
@@ -45,8 +45,12 @@ export class Bot {
     if (options.crons) {
       this.crons = this.loadDirectory(options.crons, 'crons', Cron);
     }
-    if(options.formatCheckers) {
-      this.formatCheckers = this.loadDirectory(options.formatCheckers, 'format-checkers', FormatChecker)
+    if (options.formatCheckers) {
+      this.formatCheckers = this.loadDirectory(
+        options.formatCheckers,
+        'format-checkers',
+        FormatChecker,
+      );
     }
   }
 
@@ -103,11 +107,11 @@ export class Bot {
   }
 
   private startFormatCheckers() {
-    this.formatCheckers.forEach((formatChecker) => formatChecker.start(this))
+    this.formatCheckers.forEach((formatChecker) => formatChecker.start(this));
   }
 
   private stopFormatCheckers() {
-    this.formatCheckers.forEach((formatChecker) => formatChecker.stop(this))
+    this.formatCheckers.forEach((formatChecker) => formatChecker.stop(this));
   }
 
   /**
