@@ -5,7 +5,6 @@ export function findTextChannelByName(
   name: string,
 ): TextChannel | undefined {
   return client.channels.cache.find(
-    (channel) =>
-      channel instanceof TextChannel && channel.name === name,
+    (channel) => channel instanceof TextChannel && channel.name === name,
   ) as TextChannel | undefined;
 }
