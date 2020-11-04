@@ -8,14 +8,12 @@ export interface FormatCheckerConfig extends BaseConfig {
   channelName: string;
   regexp: RegExp;
   examples?: string[];
-  postHandler?: (author: User) => Promise<void>
 }
 
 export default class FormatChecker extends Base {
   private readonly channelName: string;
   private readonly regexp: RegExp;
   private readonly examples?: string[];
-  private readonly postHandler?: (author: User) => Promise<void>;
 
   private bot: Bot | undefined;
 
@@ -23,7 +21,6 @@ export default class FormatChecker extends Base {
     super(config)
     this.channelName = config.channelName
     this.regexp = config.regexp
-    this.postHandler = config.postHandler;
     this.examples = config.examples
 
     this._messageHandler = this._messageHandler.bind(this)
@@ -69,10 +66,6 @@ export default class FormatChecker extends Base {
       channel.send(warningContent.join('\n'))
     }
     logger.debug('warning message sent')
-
-    if(this.postHandler === undefined) return;
-    logger.debug('execute postHandler')
-    await this.postHandler(author)
   }
 
   public start(bot: Bot): void {
