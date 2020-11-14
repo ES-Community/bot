@@ -13,7 +13,7 @@ const linkRegexp = `^\\[((${textRegexp})|(${discordEmojiRegexp})|${unicodeEmojiR
 export default new FormatChecker({
   enabled: true,
   name: 'Link',
-  description: 'Force le formattage du channel #liens.',
+  description: 'Force le formatage du channel #liens.',
   channelName: 'liens',
   checker: new RegExp(linkRegexp),
   examples: [

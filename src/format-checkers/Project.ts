@@ -7,7 +7,7 @@ const projectsRegexp = `^\\*\\*(\\w ?)+\\*\\*\\n\\n(.*\\n)+\n${urlRegexp}$`;
 export default new FormatChecker({
   enabled: true,
   name: 'Project',
-  description: 'Force le formattage du channel #projets.',
+  description: 'Force le formatage du channel #projets.',
   channelName: 'projets',
   checker: new RegExp(projectsRegexp),
   examples: [

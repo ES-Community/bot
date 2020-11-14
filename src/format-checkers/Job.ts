@@ -3,7 +3,7 @@ import { FormatChecker } from '../framework';
 export default new FormatChecker({
   enabled: true,
   name: 'Job',
-  description: 'Force le formattage du channel #jobs.',
+  description: 'Force le formatage du channel #jobs.',
   channelName: 'jobs',
   checker: (message, logger) => {
     const lines = message.split('\n');
