@@ -17,4 +17,11 @@ export default new FormatChecker({
 
     return !predicates.includes(false);
   },
+  examples: [
+    [
+      '**[ Orientation du poste ] - [ langage/techno (si possible avec les émoji) ] - Intitulé du poste**',
+      'Description rapide (missions proposés, lieu, nom de la boite, rémunération...)',
+      "Lien de l'annonce / Contact",
+    ].join('\n'),
+  ],
 });
