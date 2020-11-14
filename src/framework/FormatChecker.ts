@@ -3,9 +3,9 @@ import { Bot } from './Bot';
 import { findTextChannelByName } from './helpers';
 import { Message } from 'discord.js';
 import uuid from '@lukeed/uuid';
-import { BaseLogger } from 'pino';
+import { Logger } from 'pino';
 
-type FunctionChecker = (message: string, logger: BaseLogger) => boolean;
+type FunctionChecker = (message: string, logger: Logger) => boolean;
 
 export interface FormatCheckerConfig extends BaseConfig {
   channelName: string;
