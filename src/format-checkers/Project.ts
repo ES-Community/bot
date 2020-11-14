@@ -9,7 +9,7 @@ export default new FormatChecker({
   name: 'Project',
   description: 'Force le formattage du channel #projets.',
   channelName: 'projets',
-  regexp: new RegExp(projectsRegexp),
+  checker: new RegExp(projectsRegexp),
   examples: [
     `**Nom du projet**\n\nDescription du projet\n\nhttps://github.com`,
   ],

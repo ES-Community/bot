@@ -7,5 +7,5 @@ export default new FormatChecker({
   name: 'Job',
   description: 'Force le formattage du channel #jobs.',
   channelName: 'jobs',
-  regexp: new RegExp(jobRegexp),
+  checker: new RegExp(jobRegexp),
 });

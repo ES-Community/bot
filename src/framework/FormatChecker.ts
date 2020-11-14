@@ -4,15 +4,17 @@ import { findTextChannelByName } from './helpers';
 import { Message } from 'discord.js';
 import uuid from '@lukeed/uuid';
 
+type FunctionChecker = (message: string) => boolean;
+
 export interface FormatCheckerConfig extends BaseConfig {
   channelName: string;
-  regexp: RegExp;
+  checker: RegExp | FunctionChecker;
   examples?: string[];
 }
 
 export default class FormatChecker extends Base {
   private readonly channelName: string;
-  private readonly regexp: RegExp;
+  private readonly checker: RegExp | FunctionChecker;
   private readonly examples?: string[];
 
   private bot: Bot | undefined;
@@ -20,7 +22,7 @@ export default class FormatChecker extends Base {
   public constructor(config: FormatCheckerConfig) {
     super(config);
     this.channelName = config.channelName;
-    this.regexp = config.regexp;
+    this.checker = config.checker;
     this.examples = config.examples;
 
     this._messageHandler = this._messageHandler.bind(this);
@@ -33,13 +35,22 @@ export default class FormatChecker extends Base {
       message.channel.id !== findTextChannelByName(client, this.channelName)?.id
     )
       return;
-    if (this.regexp.test(message.cleanContent) === true) return;
 
     const logger = this.bot.logger.child({
       id: uuid(),
       type: 'FormatChecker',
       name: this.name,
     });
+
+    if (this.checker instanceof RegExp) {
+      if (this.checker.test(message.cleanContent) === true) return;
+    } else if (this.checker instanceof Function) {
+      if (this.checker(message.cleanContent)) return;
+    } else {
+      logger.error(`invalid checker for ${this.name}`);
+      return;
+    }
+
     logger.debug('bad format detected');
 
     const { cleanContent, author } = message;
