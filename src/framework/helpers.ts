@@ -1,10 +1,19 @@
-import { Client, TextChannel } from 'discord.js';
+import {
+  Channel,
+  ChannelManager,
+  GuildChannelManager,
+  TextChannel,
+} from 'discord.js';
 
 export function findTextChannelByName(
-  client: Client,
+  { cache }: ChannelManager | GuildChannelManager,
   name: string,
 ): TextChannel | undefined {
-  return client.channels.cache.find(
-    (channel) => channel instanceof TextChannel && channel.name === name,
+  return cache.find(
+    (channel) => isTextChannel(channel) && channel.name === name,
   ) as TextChannel | undefined;
+}
+
+export function isTextChannel(channel: Channel): channel is TextChannel {
+  return channel instanceof TextChannel;
 }

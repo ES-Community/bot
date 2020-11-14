@@ -23,7 +23,7 @@ export default new Cron({
       return;
     }
 
-    const channel = findTextChannelByName(context.client, 'jeux');
+    const channel = findTextChannelByName(context.client.channels, 'jeux');
     if (!channel) {
       throw new Error('found no #jeux channel');
     }

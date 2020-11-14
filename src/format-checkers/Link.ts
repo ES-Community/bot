@@ -2,18 +2,16 @@ import { FormatChecker } from '../framework';
 import createRegExp from 'emoji-regex';
 
 const textRegexp = '\\*\\*[A-Z]+\\*\\*';
-// todo: limiter aux emojis disponibles sur le serveur
-const discordEmojiRegexp = ' ?<:[a-z]+:[0-9]+> ?';
-const unicodeEmojiRegexp = ` ?${createRegExp().source} ?`;
+const discordEmojiRegexp = '<a?:\\w{2,32}:\\d{17,}>';
+const unicodeEmojiRegexp = `${createRegExp().source}`;
 const urlRegexp =
-  'https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)';
+  'https?:\\/\\/(www\\.)?[-\\w@:%.\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-\\w()@:%\\+.~#?&//=]*)';
 const descriptionRegexp = '([^\\r\\n])+ ';
-const linkRegexp = `^\\[((${textRegexp})|(${discordEmojiRegexp})|${unicodeEmojiRegexp})\\]${descriptionRegexp}- ${urlRegexp}$`;
-
+const linkRegexp = `^\\[${textRegexp}|( ?((${discordEmojiRegexp})|${unicodeEmojiRegexp})+ ?)\\]${descriptionRegexp}- ${urlRegexp}$`;
 export default new FormatChecker({
   enabled: true,
   name: 'Link',
-  description: 'Force le formatage du channel #liens.',
+  description: 'Force le formatage du canal #liens.',
   channelName: 'liens',
   checker: new RegExp(linkRegexp),
   examples: [

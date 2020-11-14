@@ -1,13 +1,13 @@
 import { FormatChecker } from '../framework';
 
 const urlRegexp =
-  'https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)';
+  'https?:\\/\\/(www\\.)?[-\\w@:%.\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-\\w()@:%\\+.~#?&//=]*)';
 const projectsRegexp = `^\\*\\*(\\w ?)+\\*\\*\\n\\n(.*\\n)+\n${urlRegexp}$`;
 
 export default new FormatChecker({
   enabled: true,
   name: 'Project',
-  description: 'Force le formatage du channel #projets.',
+  description: 'Force le formatage du canal #projets.',
   channelName: 'projets',
   checker: new RegExp(projectsRegexp),
   examples: [

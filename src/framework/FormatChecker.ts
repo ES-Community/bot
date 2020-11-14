@@ -1,11 +1,11 @@
 import { Base, BaseConfig } from './Base';
 import { Bot } from './Bot';
-import { findTextChannelByName } from './helpers';
-import { Message } from 'discord.js';
+import { findTextChannelByName, isTextChannel } from './helpers';
+import { Message, PartialMessage } from 'discord.js';
 import { v4 as uuid } from '@lukeed/uuid';
 import { Logger } from 'pino';
 
-type FunctionChecker = (message: string, logger: Logger) => boolean;
+type FunctionChecker = (message: Message, logger: Logger) => boolean;
 
 export interface FormatCheckerConfig extends BaseConfig {
   channelName: string;
@@ -33,13 +33,14 @@ export class FormatChecker extends Base {
     this.examples = config.examples;
 
     this._messageHandler = this._messageHandler.bind(this);
+    this._messageUpdateHandler = this._messageUpdateHandler.bind(this);
   }
 
   async _messageHandler(message: Message): Promise<void> {
     if (this.bot === undefined) return;
-    const client = this.bot.client;
     if (
-      message.channel.id !== findTextChannelByName(client, this.channelName)?.id
+      !isTextChannel(message.channel) ||
+      message.channel.name !== this.channelName
     )
       return;
 
@@ -50,53 +51,60 @@ export class FormatChecker extends Base {
     });
 
     if (this.checker instanceof RegExp) {
-      if (this.checker.test(message.cleanContent) === true) return;
-    } else if (this.checker instanceof Function) {
-      if (this.checker(message.cleanContent, logger)) return;
-    }
+      if (this.checker.test(message.cleanContent)) return;
+    } else if (this.checker(message, logger)) return;
 
     logger.debug('bad format detected');
 
     const { cleanContent, author } = message;
 
     await message.delete();
+    const plural = this.examples !== undefined && this.examples.length > 1;
+    const pluralSuffix = plural ? 's' : '';
     const warningContent = [
-      'Bonjour,',
       `Le message que vous avez posté dans ${message.channel} est incorrectement formaté, il a donc été supprimé.`,
       'Pour rappel, voici le message que vous aviez envoyé :',
-      `\`\`\`${cleanContent}\`\`\``,
+      `\`\`\`\n${cleanContent}\n\`\`\``,
       ...(this.examples !== undefined
         ? [
-            `Voici ${this.examples.length > 1 ? 'des' : 'un'} example${
-              this.examples.length > 1 ? 's' : ''
-            } de message correctement formaté :`,
-            ...this.examples.map((example) => `\`\`\`${example}\`\`\``),
+            `Voici ${
+              plural ? 'des' : 'un'
+            } example${pluralSuffix} de message${pluralSuffix} correctement formaté${pluralSuffix} :`,
+            ...this.examples.map((example) => `\`\`\`\n${example}\`\`\``),
           ]
         : []),
-    ];
+    ].join('\n');
 
     try {
-      await author
-        .send(warningContent.join('\n'))
-        .then((warning) => warning.suppressEmbeds(true));
+      await author.send(`Bonjour,\n${warningContent}`);
     } catch (err) {
       logger.error(
         err,
         'failed to send private message to user %s',
         author.tag,
       );
-      const channel = findTextChannelByName(client, 'logs');
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const channel = findTextChannelByName(message.guild!.channels, 'logs');
       if (channel === undefined)
         return logger.fatal('text channel not found: logs');
-      warningContent.unshift(`${author.toString()}:`);
-      channel.send(warningContent.join('\n'));
+      channel.send(`Bonjour ${author},\n${warningContent}`);
     }
     logger.debug('warning message sent');
+  }
+
+  async _messageUpdateHandler(
+    _oldMessage: Message | PartialMessage,
+    newMessage: Message | PartialMessage,
+  ): Promise<void> {
+    return this._messageHandler(
+      newMessage.partial ? await newMessage.fetch() : newMessage,
+    );
   }
 
   public start(bot: Bot): void {
     this.bot = bot;
     this.bot.client.on('message', this._messageHandler);
+    this.bot.client.on('messageUpdate', this._messageUpdateHandler);
   }
 
   public stop(bot: Bot): void {
