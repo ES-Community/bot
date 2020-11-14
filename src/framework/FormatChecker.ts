@@ -23,7 +23,10 @@ export class FormatChecker extends Base {
   public constructor(config: FormatCheckerConfig) {
     super(config);
     this.channelName = config.channelName;
-    if (config.checker instanceof Function || config.checker instanceof RegExp)
+    if (
+      typeof config.checker === 'function' ||
+      config.checker instanceof RegExp
+    )
       this.checker = config.checker;
     else throw new Error(`invalid checker for ${this.name}`);
 
