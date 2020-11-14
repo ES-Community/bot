@@ -1,4 +1,4 @@
-import FormatChecker from '../framework/FormatChecker';
+import { FormatChecker } from '../framework';
 import createRegExp from 'emoji-regex';
 
 const textRegexp = '\\*\\*[A-Z]+\\*\\*';

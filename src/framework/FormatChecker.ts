@@ -3,8 +3,9 @@ import { Bot } from './Bot';
 import { findTextChannelByName } from './helpers';
 import { Message } from 'discord.js';
 import uuid from '@lukeed/uuid';
+import { BaseLogger } from 'pino';
 
-type FunctionChecker = (message: string) => boolean;
+type FunctionChecker = (message: string, logger?: BaseLogger) => boolean;
 
 export interface FormatCheckerConfig extends BaseConfig {
   channelName: string;
@@ -12,7 +13,7 @@ export interface FormatCheckerConfig extends BaseConfig {
   examples?: string[];
 }
 
-export default class FormatChecker extends Base {
+export class FormatChecker extends Base {
   private readonly channelName: string;
   private readonly checker: RegExp | FunctionChecker;
   private readonly examples?: string[];
@@ -45,7 +46,7 @@ export default class FormatChecker extends Base {
     if (this.checker instanceof RegExp) {
       if (this.checker.test(message.cleanContent) === true) return;
     } else if (this.checker instanceof Function) {
-      if (this.checker(message.cleanContent)) return;
+      if (this.checker(message.cleanContent, logger)) return;
     } else {
       logger.error(`invalid checker for ${this.name}`);
       return;

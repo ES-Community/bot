@@ -1,11 +1,11 @@
-import FormatChecker from '../framework/FormatChecker';
+import { FormatChecker } from '../framework';
 
 export default new FormatChecker({
   enabled: true,
   name: 'Job',
   description: 'Force le formattage du channel #jobs.',
   channelName: 'jobs',
-  checker: (message) => {
+  checker: (message, logger) => {
     const lines = message.split('\n');
     const headerParts = lines[0].split(' - ');
 
@@ -15,6 +15,7 @@ export default new FormatChecker({
       headerParts.length === 3,
     ];
 
+    if (logger) logger.trace(predicates, 'predicates failed');
     return !predicates.includes(false);
   },
   examples: [
