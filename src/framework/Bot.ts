@@ -7,7 +7,7 @@ import pino from 'pino';
 
 import { Cron } from './Cron';
 import { Base, BaseConfig } from './Base';
-import FormatChecker from './FormatChecker';
+import { FormatChecker } from './FormatChecker';
 
 export interface BotOptions {
   /**
