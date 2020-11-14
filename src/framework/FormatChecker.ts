@@ -23,7 +23,10 @@ export class FormatChecker extends Base {
   public constructor(config: FormatCheckerConfig) {
     super(config);
     this.channelName = config.channelName;
-    this.checker = config.checker;
+    if (config.checker instanceof Function || config.checker instanceof RegExp)
+      this.checker = config.checker;
+    else throw new Error(`invalid checker for ${this.name}`);
+
     this.examples = config.examples;
 
     this._messageHandler = this._messageHandler.bind(this);
@@ -47,9 +50,6 @@ export class FormatChecker extends Base {
       if (this.checker.test(message.cleanContent) === true) return;
     } else if (this.checker instanceof Function) {
       if (this.checker(message.cleanContent, logger)) return;
-    } else {
-      logger.error(`invalid checker for ${this.name}`);
-      return;
     }
 
     logger.debug('bad format detected');
