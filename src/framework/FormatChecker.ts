@@ -5,7 +5,7 @@ import { Message } from 'discord.js';
 import uuid from '@lukeed/uuid';
 import { BaseLogger } from 'pino';
 
-type FunctionChecker = (message: string, logger?: BaseLogger) => boolean;
+type FunctionChecker = (message: string, logger: BaseLogger) => boolean;
 
 export interface FormatCheckerConfig extends BaseConfig {
   channelName: string;

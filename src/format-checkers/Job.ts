@@ -15,7 +15,7 @@ export default new FormatChecker({
       headerParts.length === 3,
     ];
 
-    if (logger) logger.trace(predicates, 'predicates failed');
+    logger.trace(predicates, 'predicates failed');
     return !predicates.includes(false);
   },
   examples: [
