@@ -7,6 +7,7 @@ import pino from 'pino';
 
 import { Cron } from './Cron';
 import { Base, BaseConfig } from './Base';
+import { FormatChecker } from './FormatChecker';
 
 export interface BotOptions {
   /**
@@ -18,6 +19,10 @@ export interface BotOptions {
    * Directory that contains the `Cron` definitions.
    */
   crons?: string;
+  /**
+   * Directory that contains the `FormatChecker` definitions.
+   */
+  formatCheckers?: string;
 }
 
 type Constructor<T extends Base, U extends BaseConfig> = {
@@ -28,6 +33,7 @@ export class Bot {
   private readonly token?: string;
   private _client: Client | null;
   private crons: Cron[] = [];
+  private formatCheckers: FormatChecker[] = [];
 
   public readonly logger: pino.Logger;
 
@@ -38,6 +44,13 @@ export class Bot {
 
     if (options.crons) {
       this.crons = this.loadDirectory(options.crons, 'crons', Cron);
+    }
+    if (options.formatCheckers) {
+      this.formatCheckers = this.loadDirectory(
+        options.formatCheckers,
+        'format-checkers',
+        FormatChecker,
+      );
     }
   }
 
@@ -93,6 +106,14 @@ export class Bot {
     this.crons.forEach((cron) => cron.stop());
   }
 
+  private startFormatCheckers() {
+    this.formatCheckers.forEach((formatChecker) => formatChecker.start(this));
+  }
+
+  private stopFormatCheckers() {
+    this.formatCheckers.forEach((formatChecker) => formatChecker.stop(this));
+  }
+
   /**
    * Returns the discord.js Client instance.
    * The bot must be started first.
@@ -118,6 +139,7 @@ export class Bot {
         once(this.client, 'ready'),
       ]);
       this.startCrons();
+      this.startFormatCheckers();
     } catch (error) {
       this._client = null;
       throw error;
@@ -132,6 +154,7 @@ export class Bot {
       throw new Error('Bot was not started');
     }
     this.stopCrons();
+    this.stopFormatCheckers();
     this._client.destroy();
     this._client = null;
   }
