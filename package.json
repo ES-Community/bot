@@ -30,6 +30,7 @@
     "dotenv": "^8.2.0",
     "emoji-regex": "^9.2.2",
     "got": "^11.8.2",
+    "html-entities": "^2.1.1",
     "make-promises-safe": "^5.1.0",
     "pino": "^6.11.1"
   },
