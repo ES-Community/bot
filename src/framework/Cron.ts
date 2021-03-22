@@ -1,4 +1,4 @@
-import uuid from '@lukeed/uuid';
+import { v4 as uuid } from '@lukeed/uuid';
 import { CronJob, CronTime } from 'cron';
 import { Client } from 'discord.js';
 import { Logger } from 'pino';

@@ -2,7 +2,7 @@ import { Base, BaseConfig } from './Base';
 import { Bot } from './Bot';
 import { findTextChannelByName } from './helpers';
 import { Message } from 'discord.js';
-import uuid from '@lukeed/uuid';
+import { v4 as uuid } from '@lukeed/uuid';
 import { Logger } from 'pino';
 
 type FunctionChecker = (message: string, logger: Logger) => boolean;
