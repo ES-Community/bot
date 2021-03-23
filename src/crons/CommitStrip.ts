@@ -1,5 +1,6 @@
 import { MessageEmbed } from 'discord.js';
 import got from 'got';
+import { decode } from 'html-entities';
 
 import { Cron, findTextChannelByName } from '../framework';
 
@@ -22,8 +23,10 @@ export default new Cron({
     }
 
     await channel.send(
-      `${latestCommitStrip.title} - ${latestCommitStrip.link}`,
-      new MessageEmbed({ image: { url: latestCommitStrip.imageUrl } }),
+      new MessageEmbed()
+        .setTitle(latestCommitStrip.title)
+        .setURL(latestCommitStrip.link)
+        .setImage(latestCommitStrip.imageUrl),
     );
   },
 });
@@ -107,7 +110,8 @@ async function getRecentCommitStrip(now: Date): Promise<CommitStrip | null> {
     id: strip.id,
     date: stripDate,
     link: strip.link,
-    title: strip.title.rendered,
+    // Sometimes, the title can contain HTML Entities, e.g. "Pendant ce temps, sur Mars #16 &#8211; Vivement 2028"
+    title: decode(strip.title.rendered, { level: 'html5', scope: 'strict' }),
     imageUrl: urlMatch[1],
   };
 }
