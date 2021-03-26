@@ -37,6 +37,7 @@ export default new Cron({
 interface WordPressPost {
   id: number;
   date: string;
+  date_gmt: string;
   link: string;
   title: {
     rendered: string;
