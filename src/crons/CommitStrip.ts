@@ -36,7 +36,7 @@ export default new Cron({
  */
 interface WordPressPost {
   id: number;
-  date: string;
+  date_gmt: string;
   link: string;
   title: {
     rendered: string;
@@ -90,7 +90,7 @@ async function getRecentCommitStrip(now: Date): Promise<CommitStrip | null> {
 
   const [strip] = posts;
 
-  const stripDate = new Date(strip.date);
+  const stripDate = new Date(strip.date_gmt + ".000Z");
   const stripTime = stripDate.getTime();
   const nowTime = now.getTime();
   const thirtyMinutes = 1000 * 60 * 30;
