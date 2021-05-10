@@ -6,12 +6,12 @@ import {
 } from 'discord.js';
 
 export function findTextChannelByName(
-  { cache }: ChannelManager | GuildChannelManager,
+  manager: ChannelManager | GuildChannelManager,
   name: string,
 ): TextChannel | undefined {
-  return cache.find(
+  return manager.cache.find(
     (channel) => isTextChannel(channel) && channel.name === name,
-  ) as TextChannel | undefined;
+  ) as TextChannel;
 }
 
 export function isTextChannel(channel: Channel): channel is TextChannel {
