@@ -6,11 +6,11 @@ export default new FormatChecker({
   description: 'Force le formatage du canal #jobs.',
   channelName: 'jobs',
   checker({ cleanContent }, logger) {
-    const lines = cleanContent.split('\n', 2);
-    const headerParts = lines[0].split(' - ', 4);
+    const lines = cleanContent.split('\n');
+    const headerParts = lines[0].split(' - ');
 
     const predicates = [
-      lines.length === 2,
+      lines.length >= 2,
       lines[0].startsWith('**') && lines[0].endsWith('**'),
       headerParts.length === 3,
     ];
