@@ -2,7 +2,7 @@ import { Base, BaseConfig } from './Base';
 import { Bot } from './Bot';
 import { findTextChannelByName } from './helpers';
 import { Message } from 'discord.js';
-import { v4 as uuid } from '@lukeed/uuid';
+import { randomUUID } from 'crypto';
 import { Logger } from 'pino';
 
 type FunctionChecker = (message: string, logger: Logger) => boolean;
@@ -44,7 +44,7 @@ export class FormatChecker extends Base {
       return;
 
     const logger = this.bot.logger.child({
-      id: uuid(),
+      id: randomUUID(),
       type: 'FormatChecker',
       name: this.name,
     });

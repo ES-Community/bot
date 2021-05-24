@@ -1,4 +1,4 @@
-import { v4 as uuid } from '@lukeed/uuid';
+import { randomUUID } from 'crypto';
 import { CronJob, CronTime } from 'cron';
 import { Client } from 'discord.js';
 import { Logger } from 'pino';
@@ -53,7 +53,7 @@ export class Cron extends Base {
 
   private async executeJob(date: Date, bot: Bot) {
     const logger = bot.logger.child({
-      id: uuid(),
+      id: randomUUID(),
       type: 'Cron',
       name: this.name,
     });
