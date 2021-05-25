@@ -17,7 +17,7 @@ export default new Cron({
     }
     context.logger.info(`Found a new CommitStrip (${latestCommitStrip.id})`);
 
-    const channel = findTextChannelByName(context.client, 'gif');
+    const channel = findTextChannelByName(context.client.channels, 'gif');
     if (!channel) {
       throw new Error('found no #gif channel');
     }

@@ -1,15 +1,20 @@
+import createRegExp from 'emoji-regex/text';
 import { FormatChecker } from '../framework';
 
+const unicodeEmojiRegexp = createRegExp().source;
 const urlRegexp =
-  'https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)';
-const projectsRegexp = `^\\*\\*(\\w ?)+\\*\\*\\n\\n(.*\\n)+\n${urlRegexp}$`;
+  '<?https?:\\/\\/(?:www\\.)?[-\\w@:%.\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-\\w()@:%\\+.~#?&//=]*)>?';
+const headerRegexp = `(?:[\\w- ]|(?:<a?:\\w{2,32}:\\d{17,20}>)|${unicodeEmojiRegexp})`;
+const projectRegexp = new RegExp(
+  `^\\*\\*${headerRegexp}+\\*\\*\\n\\n(?:.*\\n)+\n(?:(?:${headerRegexp}* )?${urlRegexp}\n)+$`,
+);
 
 export default new FormatChecker({
   enabled: true,
   name: 'Project',
-  description: 'Force le formatage du channel #projets.',
+  description: 'Force le formatage du canal #projets.',
   channelName: 'projets',
-  checker: new RegExp(projectsRegexp),
+  checker: ({ cleanContent }) => projectRegexp.test(cleanContent + '\n'),
   examples: [
     `**Nom du projet**\n\nDescription du projet\n\nhttps://github.com`,
   ],

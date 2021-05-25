@@ -3,10 +3,10 @@ import { FormatChecker } from '../framework';
 export default new FormatChecker({
   enabled: true,
   name: 'Job',
-  description: 'Force le formatage du channel #jobs.',
+  description: 'Force le formatage du canal #jobs.',
   channelName: 'jobs',
-  checker: (message, logger) => {
-    const lines = message.split('\n');
+  checker({ cleanContent }, logger) {
+    const lines = cleanContent.split('\n');
     const headerParts = lines[0].split(' - ');
 
     const predicates = [
@@ -20,9 +20,9 @@ export default new FormatChecker({
   },
   examples: [
     [
-      '**[ Orientation du poste ] - [ langage/techno (si possible avec les émoji) ] - Intitulé du poste**',
-      'Description rapide (missions proposés, lieu, nom de la boite, rémunération...)',
-      "Lien de l'annonce / Contact",
+      '**[ Orientation du poste ] - [ Langage(s) et/ou technologie(s) (si possible avec des émojis) ] - Intitulé du poste**',
+      'Description courte (missions proposés, lieu, nom de la boite, rémunération, etc.)',
+      "Lien de l'annonce et/ou contact",
     ].join('\n'),
   ],
 });
