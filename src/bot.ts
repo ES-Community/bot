@@ -1,6 +1,5 @@
 import path from 'path';
 
-import 'make-promises-safe';
 import * as Dotenv from 'dotenv';
 
 import { Bot } from './framework';

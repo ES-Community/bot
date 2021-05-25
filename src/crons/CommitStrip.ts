@@ -1,5 +1,6 @@
 import { MessageEmbed } from 'discord.js';
 import got from 'got';
+import { decode } from 'html-entities';
 
 import { Cron, findTextChannelByName } from '../framework';
 
@@ -22,8 +23,10 @@ export default new Cron({
     }
 
     await channel.send(
-      `${latestCommitStrip.title} - ${latestCommitStrip.link}`,
-      new MessageEmbed({ image: { url: latestCommitStrip.imageUrl } }),
+      new MessageEmbed()
+        .setTitle(latestCommitStrip.title)
+        .setURL(latestCommitStrip.link)
+        .setImage(latestCommitStrip.imageUrl),
     );
   },
 });
@@ -33,7 +36,7 @@ export default new Cron({
  */
 interface WordPressPost {
   id: number;
-  date: string;
+  date_gmt: string;
   link: string;
   title: {
     rendered: string;
@@ -87,7 +90,7 @@ async function getRecentCommitStrip(now: Date): Promise<CommitStrip | null> {
 
   const [strip] = posts;
 
-  const stripDate = new Date(strip.date);
+  const stripDate = new Date(strip.date_gmt + ".000Z");
   const stripTime = stripDate.getTime();
   const nowTime = now.getTime();
   const thirtyMinutes = 1000 * 60 * 30;
@@ -107,7 +110,8 @@ async function getRecentCommitStrip(now: Date): Promise<CommitStrip | null> {
     id: strip.id,
     date: stripDate,
     link: strip.link,
-    title: strip.title.rendered,
+    // Sometimes, the title can contain HTML Entities, e.g. "Pendant ce temps, sur Mars #16 &#8211; Vivement 2028"
+    title: decode(strip.title.rendered, { level: 'html5', scope: 'strict' }),
     imageUrl: urlMatch[1],
   };
 }

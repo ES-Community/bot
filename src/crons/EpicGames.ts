@@ -4,6 +4,7 @@ import got from 'got';
 import { Cron, findTextChannelByName } from '../framework';
 
 const dateFmtOptions: Intl.DateTimeFormatOptions = {
+  timeZone: 'Europe/Paris',
   year: 'numeric',
   month: 'long',
   day: 'numeric',
