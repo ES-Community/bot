@@ -47,16 +47,19 @@ export class FormatChecker extends Base {
     const logger = this.bot.logger.child({
       id: randomUUID(),
       type: 'FormatChecker',
-      name: this.name,
+      checkerName: this.name,
     });
 
     if (this.checker instanceof RegExp) {
       if (this.checker.test(message.cleanContent)) return;
     } else if (this.checker(message, logger)) return;
 
-    logger.debug('bad format detected');
-
     const { cleanContent, author } = message;
+
+    logger.info(
+      { username: author.username, tag: author.tag, cleanContent },
+      'Detected bad message format',
+    );
 
     await message.delete();
     const plural = this.examples !== undefined && this.examples.length > 1;
@@ -78,11 +81,13 @@ export class FormatChecker extends Base {
     try {
       await author.send(`Bonjour,\n${warningContent}`);
     } catch (err) {
-      logger.error(
-        err,
-        'failed to send private message to user %s',
-        author.tag,
-      );
+      if (err.code !== 50007 /* Cannot send messages to this user */) {
+        logger.error(
+          err,
+          'failed to send private message to user %s',
+          author.tag,
+        );
+      }
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const channel = findTextChannelByName(message.guild!.channels, 'logs');
       if (channel === undefined)
