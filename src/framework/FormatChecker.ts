@@ -57,7 +57,7 @@ export class FormatChecker extends Base {
     const { cleanContent, author } = message;
 
     logger.info(
-      { username: author.username, tag: author.tag, cleanContent },
+      { userId: author.id, userTag: author.tag, cleanContent },
       'Detected bad message format',
     );
 
@@ -84,8 +84,9 @@ export class FormatChecker extends Base {
       if (err.code !== 50007 /* Cannot send messages to this user */) {
         logger.error(
           err,
-          'failed to send private message to user %s',
+          'failed to send private message to user %s (id: %s)',
           author.tag,
+          author.id,
         );
       }
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
