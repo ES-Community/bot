@@ -55,7 +55,7 @@ export class Cron extends Base {
     const logger = bot.logger.child({
       id: randomUUID(),
       type: 'Cron',
-      name: this.name,
+      cronName: this.name,
     });
     try {
       logger.debug('execute cron handler');
