@@ -25,7 +25,7 @@
   "homepage": "https://github.com/ES-Community/bot#readme",
   "dependencies": {
     "cron": "^1.8.2",
-    "discord.js": "^12.5.3",
+    "discord.js": "^13.0.0-dev.d433fe8.1626004976",
     "dotenv": "^10.0.0",
     "emoji-regex": "^9.2.2",
     "got": "^11.8.2",
@@ -41,6 +41,7 @@
     "@types/ws": "^7.4.6",
     "@typescript-eslint/eslint-plugin": "^4.28.2",
     "@typescript-eslint/parser": "^4.28.2",
+    "discord-api-types": "^0.19.0-next.f393ba520d7d6d2aacaca7b3ca5d355fab614f6e",
     "eslint": "^7.30.0",
     "jest": "^27.0.6",
     "nodemon": "^2.0.12",

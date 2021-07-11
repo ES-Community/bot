@@ -22,12 +22,14 @@ export default new Cron({
       throw new Error('found no #gif channel');
     }
 
-    await channel.send(
-      new MessageEmbed()
-        .setTitle(latestCommitStrip.title)
-        .setURL(latestCommitStrip.link)
-        .setImage(latestCommitStrip.imageUrl),
-    );
+    await channel.send({
+      embeds: [
+        new MessageEmbed()
+          .setTitle(latestCommitStrip.title)
+          .setURL(latestCommitStrip.link)
+          .setImage(latestCommitStrip.imageUrl),
+      ],
+    });
   },
 });
 
@@ -90,7 +92,7 @@ async function getRecentCommitStrip(now: Date): Promise<CommitStrip | null> {
 
   const [strip] = posts;
 
-  const stripDate = new Date(strip.date_gmt + ".000Z");
+  const stripDate = new Date(strip.date_gmt + '.000Z');
   const stripTime = stripDate.getTime();
   const nowTime = now.getTime();
   const thirtyMinutes = 1000 * 60 * 30;
