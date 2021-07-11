@@ -15,9 +15,9 @@ test('bot.start() throws if called twice', async () => {
   await expect(bot.start()).rejects.toThrow(/can only be started once/);
 });
 
-test('bot.stop() throws if it was not started', () => {
+test('bot.stop() throws if it was not started', async () => {
   const bot = new Bot(dummyOptions);
-  expect(() => bot.stop()).toThrow(/was not started/);
+  await expect(bot.stop()).rejects.toThrow(/was not started/);
 });
 
 test('bot.client throws if it was not started', () => {

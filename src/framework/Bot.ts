@@ -5,8 +5,9 @@ import path from 'path';
 import { Client, Intents } from 'discord.js';
 import pino from 'pino';
 
-import { Cron } from './Cron';
 import { Base, BaseConfig } from './Base';
+import { Command, CommandManager } from './command';
+import { Cron } from './Cron';
 import { FormatChecker } from './FormatChecker';
 
 export interface BotOptions {
@@ -15,6 +16,10 @@ export interface BotOptions {
    * Defaults to `process.env.DISCORD_TOKEN`.
    */
   token?: string;
+  /**
+   * Directory that contains the `Command` definitions.
+   */
+  commands?: string;
   /**
    * Directory that contains the `Cron` definitions.
    */
@@ -27,11 +32,14 @@ export interface BotOptions {
 
 type Constructor<T extends Base, U extends BaseConfig> = {
   new (config: U): T;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  new <Any>(config: U): T;
 };
 
 export class Bot {
   private readonly token?: string;
   private _client: Client | null;
+  private commandManager?: CommandManager;
   private crons: Cron[] = [];
   private formatCheckers: FormatChecker[] = [];
 
@@ -42,9 +50,16 @@ export class Bot {
     this._client = null;
     this.logger = pino();
 
+    if (options.commands) {
+      this.commandManager = new CommandManager(
+        this.loadDirectory(options.commands, 'commands', Command),
+      );
+    }
+
     if (options.crons) {
       this.crons = this.loadDirectory(options.crons, 'crons', Cron);
     }
+
     if (options.formatCheckers) {
       this.formatCheckers = this.loadDirectory(
         options.formatCheckers,
@@ -151,6 +166,9 @@ export class Bot {
         this.client.login(this.token),
         once(this.client, 'ready'),
       ]);
+      if (this.commandManager) {
+        await this.commandManager.start(this);
+      }
       this.startCrons();
       this.startFormatCheckers();
     } catch (error) {
@@ -162,9 +180,12 @@ export class Bot {
   /**
    * Stop the bot.
    */
-  public stop(): void {
+  public async stop(): Promise<void> {
     if (!this._client) {
       throw new Error('Bot was not started');
+    }
+    if (this.commandManager) {
+      await this.commandManager.stop(this);
     }
     this.stopCrons();
     this.stopFormatCheckers();
