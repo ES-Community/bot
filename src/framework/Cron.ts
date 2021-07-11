@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { CronJob, CronTime } from 'cron';
-import { Client, MessageEmbed } from 'discord.js';
+import { Client, Formatters, MessageEmbed } from 'discord.js';
 import { Logger } from 'pino';
 import { Base, BaseConfig } from './Base';
 import { Bot } from './Bot';
@@ -65,14 +65,16 @@ export class Cron extends Base {
     } catch (error) {
       logger.error(error, 'cron handler error');
       try {
-        await findTextChannelByName(bot.client.channels, 'logs').send(
-          new MessageEmbed()
-            .setTitle('Cron run failed')
-            .addField('Name', this.name, true)
-            .addField('Run id', id, true)
-            .setDescription(`\`\`\`\n${error.stack}\n\`\`\``)
-            .setColor('RED'),
-        );
+        await findTextChannelByName(bot.client.channels, 'logs').send({
+          embeds: [
+            new MessageEmbed()
+              .setTitle('Cron run failed')
+              .addField('Name', this.name, true)
+              .addField('Run id', id, true)
+              .setDescription(Formatters.codeBlock(error.stack))
+              .setColor('RED'),
+          ],
+        });
       } catch (error2) {
         logger.error(error2, 'failed to send error to #logs');
       }

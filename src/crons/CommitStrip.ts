@@ -19,12 +19,14 @@ export default new Cron({
 
     const channel = findTextChannelByName(context.client.channels, 'gif');
 
-    await channel.send(
-      new MessageEmbed()
-        .setTitle(latestCommitStrip.title)
-        .setURL(latestCommitStrip.link)
-        .setImage(latestCommitStrip.imageUrl),
-    );
+    await channel.send({
+      embeds: [
+        new MessageEmbed()
+          .setTitle(latestCommitStrip.title)
+          .setURL(latestCommitStrip.link)
+          .setImage(latestCommitStrip.imageUrl),
+      ],
+    });
   },
 });
 

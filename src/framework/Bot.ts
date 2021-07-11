@@ -2,7 +2,7 @@ import { once } from 'events';
 import fs from 'fs';
 import path from 'path';
 
-import { Client } from 'discord.js';
+import { Client, Intents } from 'discord.js';
 import pino from 'pino';
 
 import { Cron } from './Cron';
@@ -142,7 +142,10 @@ export class Bot {
     if (this._client) {
       throw new Error('Bot can only be started once');
     }
-    this._client = new Client();
+    this._client = new Client({
+      intents: new Intents(['GUILDS', 'GUILD_MESSAGES']),
+    });
+
     try {
       await Promise.all([
         this.client.login(this.token),

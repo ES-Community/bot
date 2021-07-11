@@ -2,6 +2,7 @@ import {
   Channel,
   ChannelManager,
   GuildChannelManager,
+  PartialDMChannel,
   TextChannel,
 } from 'discord.js';
 
@@ -21,6 +22,8 @@ export function findTextChannelByName(
   return channel;
 }
 
-export function isTextChannel(channel: Channel): channel is TextChannel {
+export function isTextChannel(
+  channel: Channel | PartialDMChannel,
+): channel is TextChannel {
   return channel instanceof TextChannel;
 }

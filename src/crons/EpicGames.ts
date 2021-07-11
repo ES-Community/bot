@@ -30,22 +30,27 @@ export default new Cron({
     for (const game of games) {
       context.logger.info(`Found a new offered game (${game.title})`);
 
-      await channel.send(
-        new MessageEmbed({ title: game.title, url: game.link })
-          .setThumbnail(game.thumbnail)
-          .addField(
-            'Début',
-            game.discountStartDate.toLocaleDateString('fr-FR', dateFmtOptions),
-            true,
-          )
-          .addField(
-            'Fin',
-            game.discountEndDate.toLocaleDateString('fr-FR', dateFmtOptions),
-            true,
-          )
-          .addField('Prix', `${game.originalPrice} → **Gratuit**`)
-          .setTimestamp(),
-      );
+      await channel.send({
+        embeds: [
+          new MessageEmbed({ title: game.title, url: game.link })
+            .setThumbnail(game.thumbnail)
+            .addField(
+              'Début',
+              game.discountStartDate.toLocaleDateString(
+                'fr-FR',
+                dateFmtOptions,
+              ),
+              true,
+            )
+            .addField(
+              'Fin',
+              game.discountEndDate.toLocaleDateString('fr-FR', dateFmtOptions),
+              true,
+            )
+            .addField('Prix', `${game.originalPrice} → **Gratuit**`)
+            .setTimestamp(),
+        ],
+      });
     }
   },
 });
