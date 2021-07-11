@@ -6,10 +6,17 @@
 
 - Node.js v16
 - npm v7
+- Docker v19+ et Docker Compose
 - Un bot Discord installé sur une copie du serveur ES Community.
   - Template: https://discord.new/T3mtuFqjR8Tm
 
 ### Préparation de l'environnement
+
+Démarrez l'instance de PostgreSQL de test:
+
+```console
+docker-compose up -d
+```
 
 Installez les dépendances avec npm:
 
@@ -17,7 +24,7 @@ Installez les dépendances avec npm:
 npm ci
 ```
 
-Créez un fichier `.env` avec votre token de bot:
+Copiez le fichier `.env.example` vers `.env` et introduisez votre token de bot:
 
 ```env
 DISCORD_TOKEN=votretoken

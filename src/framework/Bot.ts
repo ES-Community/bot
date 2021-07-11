@@ -8,8 +8,13 @@ import pino from 'pino';
 import { Cron } from './Cron';
 import { Base, BaseConfig } from './Base';
 import { FormatChecker } from './FormatChecker';
+import { DBClient } from './DBClient';
 
 export interface BotOptions {
+  /**
+   * URL to the PostgreSQL database.
+   */
+  databaseUrl: string;
   /**
    * Discord token.
    * Defaults to `process.env.DISCORD_TOKEN`.
@@ -32,14 +37,16 @@ type Constructor<T extends Base, U extends BaseConfig> = {
 export class Bot {
   private readonly token?: string;
   private _client: Client | null;
+  private dbClient: DBClient;
   private crons: Cron[] = [];
   private formatCheckers: FormatChecker[] = [];
 
   public readonly logger: pino.Logger;
 
-  public constructor(options: BotOptions = {}) {
+  public constructor(options: BotOptions) {
     this.token = options.token;
     this._client = null;
+    this.dbClient = new DBClient(options.databaseUrl);
     this.logger = pino();
 
     if (options.crons) {
@@ -129,6 +136,7 @@ export class Bot {
    * Start the bot by connecting it to Discord.
    */
   public async start(): Promise<void> {
+    console.log(await this.dbClient.test());
     if (this._client) {
       throw new Error('Bot can only be started once');
     }
