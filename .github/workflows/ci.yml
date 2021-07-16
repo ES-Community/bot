@@ -1,35 +1,45 @@
-name: CI
+name: Node.js CI
 
 on:
   push:
     branches: main
     paths-ignore: [README.md, LICENSE, Procfile]
-    tags-ignore: ['*']
   pull_request:
-    branches: ['*']
     paths-ignore: [README.md, LICENSE, Procfile]
 
+env:
+  NODE_VERSION: 16
+
 jobs:
-  ci:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions/setup-node@v2
         with:
-          node-version: 16.x
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
-        id: deps
         run: npm ci
 
       - name: Run ESLint
         run: npm run lint
 
       - name: Check types
-        if: always() && steps.deps.outcome == 'success'
-        id: types
         run: npm run check-types
 
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Run tests
-        if: always() && steps.types.outcome == 'success'
         run: npm run test-only
