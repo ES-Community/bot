@@ -4,6 +4,9 @@ import * as Dotenv from 'dotenv';
 
 import { Bot } from './framework';
 
+// @ts-expect-error `@types/node` doesn't define this yet.
+process.setSourceMapsEnabled(true);
+
 Dotenv.config();
 
 process.env.TZ = 'Europe/Paris';
