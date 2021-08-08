@@ -1,5 +1,6 @@
 import { MessageEmbed } from 'discord.js';
 import got from 'got';
+import { Logger } from 'pino';
 
 import { Cron, findTextChannelByName } from '../framework';
 
@@ -19,7 +20,7 @@ export default new Cron({
     'Vérifie tous les jours à 17h00 (Paris) si Epic Games offre un jeu (promotion gratuite) et alerte dans #jeux',
   schedule: '0 17 * * *',
   async handle(context) {
-    const games = await getOfferedGames(context.date);
+    const games = await getOfferedGames(context.date, context.logger);
     if (!games) {
       return;
     }
@@ -142,7 +143,10 @@ const oneDay = 1000 * 60 * 60 * 24;
  * were offered between the previous and current cron execution, returns them.
  * @param now - Current date. Comes from cron schedule.
  */
-async function getOfferedGames(now: Date): Promise<Game[] | null> {
+async function getOfferedGames(
+  now: Date,
+  logger: Logger,
+): Promise<Game[] | null> {
   const { body } = await got<EpicGamesProducts>(
     'https://www.epicgames.com/graphql',
     {
@@ -158,6 +162,9 @@ async function getOfferedGames(now: Date): Promise<Game[] | null> {
       responseType: 'json',
     },
   );
+
+  logger.info({ data: body.data }, 'Offered games GraphQL response');
+
   const catalog = body.data.Catalog.searchStore;
 
   if (catalog.paging.total === 0) {
