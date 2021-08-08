@@ -71,17 +71,27 @@ export class Bot {
       throw err;
     }
 
-    const allExports = list.map((file) => {
-      const filePath = path.join(directory, file);
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const value = require(filePath);
-      if (!value || !value.default || !(value.default instanceof constructor)) {
-        throw new Error(
-          `${filePath} must export an instance of ${constructor.name}`,
-        );
-      }
-      return value.default as T;
-    });
+    const allExports = list
+      .filter((file) => {
+        const ext = path.extname(file);
+        // Ignore non-source files (such as ".map")
+        return ['.js', '.ts'].includes(ext);
+      })
+      .map((file) => {
+        const filePath = path.join(directory, file);
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const value = require(filePath);
+        if (
+          !value ||
+          !value.default ||
+          !(value.default instanceof constructor)
+        ) {
+          throw new Error(
+            `${filePath} must export an instance of ${constructor.name}`,
+          );
+        }
+        return value.default as T;
+      });
 
     const enabledExports = allExports.filter((element) => element.enabled);
 
