@@ -9,7 +9,7 @@
     "format": "prettier --write src tests",
     "lint": "eslint src --ext ts",
     "lint-fix": "npm run lint -- --fix",
-    "start": "nodemon --watch \"src/**/*.ts\" -e ts --exec \"ts-node src/bot.ts | pino-pretty\"",
+    "start": "nodemon --watch \"src/**/*.ts\" -e ts --exec \"ts-node -r dotenv/config src/bot.ts | pino-pretty\"",
     "test": "npm run test-only && npm run lint && npm run check-types",
     "test-only": "jest",
     "test-coverage": "jest --coverage"
