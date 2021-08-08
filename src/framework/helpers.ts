@@ -8,10 +8,17 @@ import {
 export function findTextChannelByName(
   manager: ChannelManager | GuildChannelManager,
   name: string,
-): TextChannel | undefined {
-  return manager.cache.find(
+): TextChannel {
+  const channel = manager.cache.find(
     (channel) => isTextChannel(channel) && channel.name === name,
-  ) as TextChannel;
+  );
+  if (!channel) {
+    throw new Error(`found no #${name} channel`);
+  }
+  if (!(channel instanceof TextChannel)) {
+    throw new Error(`channel #${name} is not a text channel`);
+  }
+  return channel;
 }
 
 export function isTextChannel(channel: Channel): channel is TextChannel {
