@@ -25,9 +25,6 @@ export default new Cron({
     }
 
     const channel = findTextChannelByName(context.client.channels, 'jeux');
-    if (!channel) {
-      throw new Error('found no #jeux channel');
-    }
 
     for (const game of games) {
       context.logger.info(`Found a new offered game (${game.title})`);

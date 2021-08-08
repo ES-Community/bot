@@ -91,8 +91,6 @@ export class FormatChecker extends Base {
       }
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const channel = findTextChannelByName(message.guild!.channels, 'logs');
-      if (channel === undefined)
-        return logger.fatal('text channel not found: logs');
       channel.send(`Bonjour ${author},\n${warningContent}`);
     }
     logger.debug('warning message sent');

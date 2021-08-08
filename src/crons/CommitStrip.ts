@@ -18,9 +18,6 @@ export default new Cron({
     context.logger.info(`Found a new CommitStrip (${latestCommitStrip.id})`);
 
     const channel = findTextChannelByName(context.client.channels, 'gif');
-    if (!channel) {
-      throw new Error('found no #gif channel');
-    }
 
     await channel.send(
       new MessageEmbed()
@@ -90,7 +87,7 @@ async function getRecentCommitStrip(now: Date): Promise<CommitStrip | null> {
 
   const [strip] = posts;
 
-  const stripDate = new Date(strip.date_gmt + ".000Z");
+  const stripDate = new Date(strip.date_gmt + '.000Z');
   const stripTime = stripDate.getTime();
   const nowTime = now.getTime();
   const thirtyMinutes = 1000 * 60 * 30;
