@@ -1,15 +1,9 @@
+// Must be imported first so it runs before other files.
+import './setup-env';
+
 import path from 'path';
 
-import * as Dotenv from 'dotenv';
-
 import { Bot } from './framework';
-
-// @ts-expect-error `@types/node` doesn't define this yet.
-process.setSourceMapsEnabled(true);
-
-Dotenv.config();
-
-process.env.TZ = 'Europe/Paris';
 
 const bot = new Bot({
   token: process.env.DISCORD_TOKEN,
