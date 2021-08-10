@@ -1,33 +1,27 @@
-import { once } from 'events';
-import fs from 'fs';
-import path from 'path';
+import { once } from 'node:events';
+import fs from 'node:fs/promises';
 
 import { Client, Intents } from 'discord.js';
 import pino from 'pino';
 
-import { Base, BaseConfig } from './Base';
-import { Command, CommandManager } from './command';
-import { Cron } from './Cron';
-import { FormatChecker } from './FormatChecker';
+import { Command, CommandManager } from './command/index.js';
+import { Base, BaseConfig } from './Base.js';
+import { Cron } from './Cron.js';
+import { FormatChecker } from './FormatChecker.js';
 
-export interface BotOptions {
-  /**
-   * Discord token.
-   * Defaults to `process.env.DISCORD_TOKEN`.
-   */
-  token?: string;
+export interface BotStartOptions {
   /**
    * Directory that contains the `Command` definitions.
    */
-  commands?: string;
+  commands?: URL;
   /**
    * Directory that contains the `Cron` definitions.
    */
-  crons?: string;
+  crons?: URL;
   /**
    * Directory that contains the `FormatChecker` definitions.
    */
-  formatCheckers?: string;
+  formatCheckers?: URL;
 }
 
 type Constructor<T extends Base, U extends BaseConfig> = {
@@ -37,46 +31,29 @@ type Constructor<T extends Base, U extends BaseConfig> = {
 };
 
 export class Bot {
-  private readonly token?: string;
-  private _client: Client | null;
+  private _client: Client<true> | null;
   private commandManager?: CommandManager;
   private crons: Cron[] = [];
   private formatCheckers: FormatChecker[] = [];
 
   public readonly logger: pino.Logger;
 
-  public constructor(options: BotOptions = {}) {
-    this.token = options.token;
+  /**
+   * @param token Discord token. Defaults to `process.env.DISCORD_TOKEN`.
+   */
+  public constructor(private readonly token?: string) {
     this._client = null;
     this.logger = pino();
-
-    if (options.commands) {
-      this.commandManager = new CommandManager(
-        this.loadDirectory(options.commands, 'commands', Command),
-      );
-    }
-
-    if (options.crons) {
-      this.crons = this.loadDirectory(options.crons, 'crons', Cron);
-    }
-
-    if (options.formatCheckers) {
-      this.formatCheckers = this.loadDirectory(
-        options.formatCheckers,
-        'format-checkers',
-        FormatChecker,
-      );
-    }
   }
 
-  private loadDirectory<T extends Base, U extends BaseConfig>(
-    directory: string,
+  private async loadDirectory<T extends Base, U extends BaseConfig>(
+    directory: URL,
     name: string,
     constructor: Constructor<T, U>,
-  ): T[] {
+  ): Promise<T[]> {
     let list: string[];
     try {
-      list = fs.readdirSync(directory);
+      list = await fs.readdir(directory);
     } catch (err) {
       if (err.code === 'ENOENT') {
         throw new Error(
@@ -86,27 +63,22 @@ export class Bot {
       throw err;
     }
 
-    const allExports = list
-      .filter((file) => {
-        const ext = path.extname(file);
-        // Ignore non-source files (such as ".map")
-        return ['.js', '.ts'].includes(ext);
-      })
-      .map((file) => {
-        const filePath = path.join(directory, file);
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const value = require(filePath);
-        if (
-          !value ||
-          !value.default ||
-          !(value.default instanceof constructor)
-        ) {
-          throw new Error(
-            `${filePath} must export an instance of ${constructor.name}`,
-          );
-        }
-        return value.default as T;
-      });
+    const allExports = await Promise.all(
+      list
+        .filter((file) => !file.endsWith('.map'))
+        .map(async (file) => {
+          const filePath = new URL(file, directory);
+          // @ts-expect-error Types are not up to date
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
+          const mod = await import(filePath);
+          if (!(mod.default instanceof constructor)) {
+            throw new Error(
+              `${filePath} must export an instance of ${constructor.name}`,
+            );
+          }
+          return mod.default as T;
+        }),
+    );
 
     const enabledExports = allExports.filter((element) => element.enabled);
 
@@ -143,7 +115,7 @@ export class Bot {
    * Returns the discord.js Client instance.
    * The bot must be started first.
    */
-  public get client(): Client {
+  public get client(): Client<true> {
     if (!this._client) {
       throw new Error('Bot was not started');
     }
@@ -153,13 +125,31 @@ export class Bot {
   /**
    * Start the bot by connecting it to Discord.
    */
-  public async start(): Promise<void> {
+  public async start(options: BotStartOptions = {}): Promise<void> {
     if (this._client) {
       throw new Error('Bot can only be started once');
     }
     this._client = new Client({
       intents: new Intents(['GUILDS', 'GUILD_MESSAGES']),
     });
+
+    if (options.commands) {
+      this.commandManager = new CommandManager(
+        await this.loadDirectory(options.commands, 'commands', Command),
+      );
+    }
+
+    if (options.crons) {
+      this.crons = await this.loadDirectory(options.crons, 'crons', Cron);
+    }
+
+    if (options.formatCheckers) {
+      this.formatCheckers = await this.loadDirectory(
+        options.formatCheckers,
+        'format-checkers',
+        FormatChecker,
+      );
+    }
 
     try {
       await Promise.all([

@@ -2,7 +2,7 @@ import { MessageEmbed } from 'discord.js';
 import got from 'got';
 import { Logger } from 'pino';
 
-import { Cron, findTextChannelByName } from '../framework';
+import { Cron, findTextChannelByName } from '../framework/index.js';
 
 const dateFmtOptions: Intl.DateTimeFormatOptions = {
   timeZone: 'Europe/Paris',

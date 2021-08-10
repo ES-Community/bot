@@ -1,4 +1,4 @@
-import { Command, CommandOptionTypes } from '../framework';
+import { Command, CommandOptionTypes } from '../framework/index.js';
 
 export default new Command({
   name: 'hello',

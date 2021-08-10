@@ -13,7 +13,7 @@ import type {
   APIInteractionDataResolvedChannel,
 } from 'discord-api-types/v9';
 import type { Logger } from 'pino';
-import { Base, BaseConfig } from '../Base';
+import { Base, BaseConfig } from '../Base.js';
 
 export const enum CommandOptionTypes {
   String = 3,

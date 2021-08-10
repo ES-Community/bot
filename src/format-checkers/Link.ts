@@ -1,18 +1,17 @@
-import { FormatChecker } from '../framework';
-import createRegExp from 'emoji-regex/text';
+import { FormatChecker } from '../framework/index.js';
+import emojiRegExp from '../emoji-regex.js';
 
-const unicodeEmojiRegexp = createRegExp().source;
-const urlRegexp =
+const urlRegExp =
   '<?https?:\\/\\/(?:www\\.)?[-\\w@:%.\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-\\w()@:%\\+.~#?&//=]*)>?';
-const titleRegexp = `(?:[\\w- ]|(?:<a?:\\w{2,32}:\\d{17,20}>)|${unicodeEmojiRegexp})+`;
-const linkRegexp = `^\\[( )?(\\*\\*)?${titleRegexp}\\2\\1\\](?:[^\\n])+ - ${urlRegexp}$`;
+const titleRegExp = `(?:[\\w- ]|(?:<a?:\\w{2,32}:\\d{17,20}>)|${emojiRegExp})+`;
+const linkRegExp = `^\\[( )?(\\*\\*)?${titleRegExp}\\2\\1\\](?:[^\\n])+ - ${urlRegExp}$`;
 
 export default new FormatChecker({
   enabled: true,
   name: 'Link',
   description: 'Force le formatage du canal #liens.',
   channelName: 'liens',
-  checker: new RegExp(linkRegexp),
+  checker: new RegExp(linkRegExp),
   examples: [
     '[**SUJET**] Votre description ici - https://github.com/es-community',
     '[👍] Votre description ici - https://github.com/es-community',

@@ -2,7 +2,7 @@ import { MessageEmbed } from 'discord.js';
 import got from 'got';
 import { decode } from 'html-entities';
 
-import { Cron, findTextChannelByName } from '../framework';
+import { Cron, findTextChannelByName } from '../framework/index.js';
 
 export default new Cron({
   enabled: true,

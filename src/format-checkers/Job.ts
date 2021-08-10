@@ -1,4 +1,4 @@
-import { FormatChecker } from '../framework';
+import { FormatChecker } from '../framework/index.js';
 
 export default new FormatChecker({
   enabled: true,

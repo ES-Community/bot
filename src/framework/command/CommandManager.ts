@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion */
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 import { Snowflake, Interaction } from 'discord.js';
-import type { Bot } from '../Bot';
-import { Command } from './Command';
+import type { Bot } from '../Bot.js';
+import type { Command } from './Command.js';
 
 export class CommandManager {
   /**

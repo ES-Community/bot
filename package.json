@@ -2,6 +2,7 @@
   "name": "esc-bot",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.prod.json",
     "check-types": "tsc --noEmit",
@@ -9,10 +10,10 @@
     "format": "prettier --write src tests",
     "lint": "eslint src --ext ts",
     "lint-fix": "npm run lint -- --fix",
-    "start": "nodemon --watch \"src/**/*.ts\" -e ts --exec \"ts-node -r dotenv/config src/bot.ts | pino-pretty\"",
+    "start": "nodemon --watch \"src/**/*.ts\" -e ts --exec \"node --loader ts-node/esm -r dotenv/config src/bot.ts | pino-pretty\"",
     "test": "npm run test-only && npm run lint && npm run check-types",
-    "test-only": "jest",
-    "test-coverage": "jest --coverage"
+    "test-only": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test-coverage": "npm run test-only -- --coverage"
   },
   "repository": {
     "type": "git",
@@ -34,7 +35,6 @@
   },
   "devDependencies": {
     "@types/cron": "^1.7.3",
-    "@types/emoji-regex": "^8.0.0",
     "@types/jest": "^26.0.24",
     "@types/node": "^16.4.13",
     "@types/pino": "^6.3.9",
@@ -51,7 +51,7 @@
     "typescript": "^4.3.5"
   },
   "engines": {
-    "node": ">=16.6.0"
+    "node": ">=16.6.1"
   },
   "volta": {
     "node": "16.6.1"

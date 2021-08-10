@@ -1,12 +1,12 @@
 {
   "include": ["src/**/*.ts", "tests/**/*.ts"],
   "compilerOptions": {
-    "target": "ES2020",
-    "lib": ["ES2020"],
+    "target": "ESNext",
+    "lib": ["ESNext"],
     "strict": true,
     "outDir": "build",
     "moduleResolution": "node",
-    "module": "CommonJS",
+    "module": "ESNext",
     "esModuleInterop": true,
     "sourceMap": true,
     "rootDir": "./",
