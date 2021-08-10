@@ -85,7 +85,7 @@ $ npm run masco migrate # pour toutes les commandes
 $ npm run masco migrate <nom du fichier de la commande> # pour une commande spécifique
 ```
 
-Veuillez vous référ à la commande d'aide de `masco` pour plus d'informations et d'exempels : `npm run help`.
+Veuillez vous référer à la commande d'aide de `masco` pour plus d'informations et d'exempels : `npm run help`.
 
 Chaque commande doit être écrite dans un fichier du dossier `src/commands`. Ce
 fichier doit instancier et exporter par défaut une instance de la classe `Command`,
