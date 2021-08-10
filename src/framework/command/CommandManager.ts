@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion */
 import { randomUUID } from 'node:crypto';
-import { Snowflake, Interaction } from 'discord.js';
+import { isDeepStrictEqual } from 'node:util';
+
+import { Snowflake, Interaction, Constants } from 'discord.js';
 import type { Bot } from '../Bot.js';
 import type { Command } from './Command.js';
+import { createCommandData } from './helpers.js';
 
 export class CommandManager {
   /**
@@ -11,8 +14,10 @@ export class CommandManager {
   public readonly commands = new Map<Snowflake, Command>();
 
   private bot!: Bot;
+  private holds?: Command[];
 
-  public constructor(private holds: Command[]) {
+  public constructor(holds: Command[]) {
+    this.holds = holds;
     this._interactionHandler = this._interactionHandler.bind(this);
   }
 
@@ -25,12 +30,9 @@ export class CommandManager {
 
     if (!command) {
       return this.bot.logger
-        .child({
-          id: randomUUID(),
-          type: 'CommandManager',
-        })
+        .child({ id: randomUUID(), type: 'CommandManager' })
         .error(
-          'unregistred slash command %s (id: %s)',
+          'unknown command %s (id: %s)',
           interaction.commandName,
           interaction.commandId,
         );
@@ -49,8 +51,8 @@ export class CommandManager {
         logger,
         interaction,
         args: Object.fromEntries(
-          interaction.options.data.map((option, name) => [
-            name,
+          interaction.options.data.map((option) => [
+            option.name,
             (option.member ??
               option.user ??
               option.channel ??
@@ -67,42 +69,56 @@ export class CommandManager {
   public async start(bot: Bot): Promise<void> {
     this.bot = bot;
 
-    await Promise.all(
-      this.holds.map(async (hold) => {
-        // The application cannot be null if the Client is ready.
-        const command = await this.bot.client.application!.commands.create(
+    const registeredCommands = (
+      await bot.client.application.commands.fetch()
+    ).clone();
+
+    for (const command of this.holds!) {
+      const commandData = createCommandData(command);
+      const registeredCommand = registeredCommands.find((command) =>
+        isDeepStrictEqual(
           {
-            name: hold.name,
-            description: hold.description,
-            defaultPermission: hold.defaultPermission,
-            options:
-              hold.options &&
-              (Object.entries(hold.options).map(([key, value]) => ({
-                name: key,
-                ...value,
-              })) as any),
+            name: command.name,
+            description: command.description,
+            options: command.options.map(({ type, ...option }) => ({
+              type: Constants.ApplicationCommandOptionTypes[type],
+              ...option,
+            })),
+            defaultPermission: command.defaultPermission,
           },
-          hold.guildId as any,
+          commandData,
+        ),
+      );
+
+      if (registeredCommand) {
+        this.commands.set(registeredCommand.id, command);
+        registeredCommands.delete(registeredCommand.id);
+      } else {
+        bot.logger
+          .child({ id: randomUUID(), type: 'CommandManager' })
+          .warn(
+            "The command '%s' is not registered or not up to date with the local command. Please run the migrations before starting the bot",
+            command.name,
+          );
+      }
+    }
+
+    for (const command of registeredCommands.values()) {
+      bot.logger
+        .child({ id: randomUUID(), type: 'CommandManager' })
+        .warn(
+          "The registered command '%s' doesn't exist locally. Please run the migrations before starting the bot",
+          command.name,
         );
-        this.commands.set(command.id, hold);
-      }),
-    );
+    }
 
     // We don't need this.holds anymore.
-    this.holds = [];
+    delete this.holds;
 
     this.bot.client.on('interactionCreate', this._interactionHandler);
   }
 
   public async stop(bot: Bot): Promise<void> {
     bot.client.off('interactionCreate', this._interactionHandler);
-
-    // Unregister *all* registered slash commands.
-    await Promise.all(
-      // The application cannot be null if the Client is ready.
-      (
-        await bot.client.application!.commands.fetch()
-      ).map((command) => command.delete()),
-    );
   }
 }

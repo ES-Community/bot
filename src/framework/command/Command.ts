@@ -4,7 +4,6 @@ import type {
   GuildChannel,
   GuildMember,
   Role,
-  Snowflake,
   User,
 } from 'discord.js';
 import type {
@@ -25,7 +24,7 @@ export const enum CommandOptionTypes {
   Mentionable,
 }
 
-interface CommandOptionsData<
+type CommandOptionsData<
   T extends CommandOptionTypes =
     | CommandOptionTypes.Boolean
     | CommandOptionTypes.Channel
@@ -33,14 +32,18 @@ interface CommandOptionsData<
     | CommandOptionTypes.Role
     | CommandOptionTypes.User,
   C = never,
-> {
+> = {
   readonly type: T;
   readonly description: string;
+  /**
+   * If the options is required
+   * @default false
+   */
   readonly required?: boolean;
   readonly choices?: C extends never
     ? never
-    : readonly { readonly name: string; readonly value: C }[];
-}
+    : readonly { readonly name: string; readonly value: T }[];
+};
 
 export type CommandOptions = Record<
   string,
@@ -108,14 +111,10 @@ export interface CommandContext<T extends CommandOptions> {
 export interface CommandConfig<T extends CommandOptions = CommandOptions>
   extends BaseConfig {
   /**
-   * The guild ID (if this command is specific to a guild)
-   */
-  guildId?: Snowflake;
-  /**
    * Whether the command is enabled by default when the app is added to a guild
    * @default true
    */
-  defaultPermission?: boolean;
+  enabled: boolean;
   /**
    * Command options
    */
@@ -128,14 +127,14 @@ export interface CommandConfig<T extends CommandOptions = CommandOptions>
 
 export class Command<T extends CommandOptions = CommandOptions> extends Base {
   /**
-   * The guild ID (if this command is specific to a guild)
-   */
-  public readonly guildId: Snowflake | undefined;
-  /**
    * Whether the command is enabled by default when the app is added to a guild
    * @default true
    */
-  public readonly defaultPermission: boolean | undefined;
+  public readonly enabled: boolean;
+  /**
+   * Command name
+   */
+  public readonly name: string;
   /**
    * Command options
    */
@@ -147,9 +146,9 @@ export class Command<T extends CommandOptions = CommandOptions> extends Base {
 
   public constructor(config: CommandConfig<T>) {
     super(config);
-    this.guildId = config.guildId;
+    this.name = config.name.toLowerCase();
     this.options = config.options;
-    this.defaultPermission = config.defaultPermission;
+    this.enabled = config.enabled;
     this.handler = config.handle;
   }
 }

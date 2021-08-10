@@ -73,16 +73,28 @@ Cette commande exécute le compilateur TypeScript avec l'option `--noEmit`. Elle
 
 ### Commandes
 
+#### Migrations
+
+Si vous avez apporté des modifications à des commandes, ajouté des nouvelles commandes ou supprimé des commands, vous devez lancer une migration avant de lancer le bot.
+Les migrations permettent d'enregistrer ou de mettre à jour les commande auprès de Discord. Si la migration n'est pas effectué (lorsque c'est nécessaire), les nouvelles commandes, commandes modifiées ou supprimées disfonctionneront. Le bot vous avertira au démarrage si une migration est nécessaire.
+
+Pour migrer le commande vous pouvez faire :
+
+```sh
+$ npm run masco migrate # pour toutes les commandes
+$ npm run masco migrate <nom du fichier de la commande> # pour une commande spécifique
+```
+
+Veuillez vous référ à la commande d'aide de `masco` pour plus d'informations et d'exempels : `npm run help`.
+
 Chaque commande doit être écrite dans un fichier du dossier `src/commands`. Ce
 fichier doit instancier et exporter par défaut une instance de la classe `Command`,
 en lui passant les paramètres de configuration suivants :
 
-- `enabled`: boolean. Peut être mis à `false` pour désactiver la commande.
+- `enabled`: boolean. Si la commande doit être activé par défaut quand le bot est ajouté à un serveur (`true` par défaut) (correspond à `default_permission`).
 - `name`: string. Nom de la commande..
 - `description`: string. Description de ce que fait la commande (en français).
 - `options`?: object. Options (arguments) de la commande.
-- `guildId`?: Snowflake. L'identifiant d'une guilde, si cette commande est spécifique à une guilde.
-- `defaultPermission`?: boolean. Si la commande doit être activé par défaut quand le bot est ajouté à un serveur (`true` par défaut).
 - `handle`: function. Fonction exécutée lorsque cette commande est appellée. Elle recevra un argument `context`, avec les propriétés :
   - `args`: Objet correctement typé, contenant les options fournis par l'éxecuteur de la commande (abstraction d'`interaction.options`).
   - `interaction`: Instance de CommandInteraction (discord.js).
