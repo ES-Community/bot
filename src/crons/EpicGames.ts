@@ -17,8 +17,8 @@ export default new Cron({
   enabled: true,
   name: 'EpicGames',
   description:
-    'Vérifie tous les jours à 17h00 (Paris) si Epic Games offre un jeu (promotion gratuite) et alerte dans #jeux',
-  schedule: '0 17 * * *',
+    'Vérifie tous les jours à 17h30 (Paris) si Epic Games offre un jeu (promotion gratuite) et alerte dans #jeux',
+  schedule: '30 17 * * *',
   async handle(context) {
     const games = await getOfferedGames(context.date, context.logger);
     if (!games) {
