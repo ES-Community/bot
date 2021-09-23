@@ -196,9 +196,9 @@ async function getOfferedGames(
       link: `https://www.epicgames.com/store/fr/p/${
         slugSlashIndex === -1 ? slug : slug.slice(0, slugSlashIndex)
       }`,
-      thumbnail:
-        game.keyImages.find((image) => image.type === 'Thumbnail')?.url ||
-        game.keyImages[0].url,
+      thumbnail: encodeURI(
+        game.keyImages.find((image) => image.type === 'Thumbnail').url,
+      ),
       originalPrice: game.price.totalPrice.fmtPrice.originalPrice,
       discountStartDate: new Date(discount.startDate),
       discountEndDate: new Date(discount.endDate),
