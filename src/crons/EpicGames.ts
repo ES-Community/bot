@@ -197,7 +197,7 @@ async function getOfferedGames(
         slugSlashIndex === -1 ? slug : slug.slice(0, slugSlashIndex)
       }`,
       thumbnail: encodeURI(
-        game.keyImages.find((image) => image.type === 'Thumbnail').url,
+        game.keyImages.find((image) => image.type === 'Thumbnail')!.url,
       ),
       originalPrice: game.price.totalPrice.fmtPrice.originalPrice,
       discountStartDate: new Date(discount.startDate),
