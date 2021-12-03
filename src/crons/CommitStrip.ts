@@ -5,7 +5,7 @@ import { decode } from 'html-entities';
 import { Cron, findTextChannelByName } from '../framework';
 
 export default new Cron({
-  enabled: false,
+  enabled: true,
   name: 'CommitStrip',
   description:
     'Vérifie toutes les 30 minutes si un nouveau CommitStrip est sorti et le poste dans #gif',
