@@ -100,7 +100,6 @@ async function getOfferedGame(logger: Logger): Promise<Game | null> {
   
   const description = gameHTML.querySelector(".content-summary-item__description")?.innerText ?? "";
   const banner = gameHTML.querySelector("head meta[property=\"og:image\"]")?.getAttribute("content") ?? "";
-  const rating = gameHTML.querySelector(".rating.productcard-rating__score")?.innerText ?? "";
   
   logger.info({ data: { gameJSON, description, banner } }, "Offered games response");
   
@@ -113,6 +112,6 @@ async function getOfferedGame(logger: Logger): Promise<Game | null> {
     banner,
     originalPrice: gameJSON.offers.price,
     discountEndDate: new Date(endTimestamp),
-    rating
+    rating: `${gameJSON.aggregateRating.ratingValue} / 5`,
   };
 }
