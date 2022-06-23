@@ -41,7 +41,7 @@ export default new Cron({
           game.discountEndDate.toLocaleDateString("fr-FR", dateFmtOptions),
           true
         )
-        .addField("Prix", `${game.originalPrice} → **Gratuit**`)
+        .addField("Prix", `${game.originalPrice}€ → **Gratuit**`)
         .addField("Note", `⭐ ${game.rating}`)
         .setTimestamp()
     );
