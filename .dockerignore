@@ -1,0 +1,7 @@
+.git
+.github
+build
+node_modules
+tests
+
+.env
