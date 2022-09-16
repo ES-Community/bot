@@ -8,6 +8,7 @@
     "moduleResolution": "node",
     "module": "CommonJS",
     "esModuleInterop": true,
+    "allowJs": true,
     "sourceMap": true,
     "rootDir": "./",
     "baseUrl": "./",
