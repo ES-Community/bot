@@ -9,14 +9,56 @@ type JSONTypes = JSONScalar | JSONArray | JSONObject;
 
 export interface IKeyValue {
   key: string;
-  value: Record<string | number, JSONTypes>;
+  value: JSONTypes;
 }
 
-export const KeyValueStore = () => DB('kv');
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export const KeyValueStore = <U = never>() => DB<U>('kv');
 
 export const KeyValue = {
-  get length(): Promise<number> {
-    return KeyValueStore().count('key').pluck('key')
-      .then(results => results[0]);
+  length(): Promise<number> {
+    return KeyValueStore<number>()
+      .count('key')
+      .pluck('key')
+      .first();
+  },
+  
+  keys(): Promise<Iterable<string>> {
+    return KeyValueStore<string>()
+      .select('key')
+      .pluck('key');
+  },
+  
+  values(): Promise<Iterable<JSONTypes>> {
+    return KeyValueStore<JSONTypes>()
+      .select('value')
+      .pluck('value')
+      .then(values => values.map((v: string) => JSON.parse(v)));
+  },
+  
+  entries(): Promise<Iterable<[string, JSONTypes]>> {
+    return KeyValueStore<Iterable<IKeyValue>>()
+      .select('key', 'value')
+      .then(entries => entries.map((kv) => [kv.key, kv.value]));
+  },
+  
+  all(): Promise<Iterable<IKeyValue>> {
+    return KeyValueStore<Iterable<IKeyValue>>()
+      .select('key', 'value');
+  },
+  
+  async get(key: string): Promise<JSONTypes> {
+    const value = await KeyValueStore<string>().select('value').where('key', key).first();
+    
+    return JSON.parse(value);
+  },
+  
+  async set(key: string, value: JSONTypes): Promise<number[]> {
+    return KeyValueStore<IKeyValue>().insert({
+      key: key,
+      value: JSON.stringify(value)
+    })
+      .onConflict('key')
+      .merge();
   }
 }
