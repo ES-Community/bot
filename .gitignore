@@ -107,3 +107,6 @@ build
 
 # optional IDE
 .idea
+
+# Project specific
+*.sqlite3
