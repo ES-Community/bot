@@ -14,7 +14,7 @@ export interface IKeyValue {
 export const KeyValueStore = <U = never>() => DB<U>('kv');
 
 export const KeyValue = {
-  length(): Promise<number> {
+  size(): Promise<number> {
     return KeyValueStore<number>()
       .count('key', {as: 'key'})
       .then(values => values[0].key as number);
@@ -80,13 +80,13 @@ export const KeyValue = {
   // Promise<number> is the number of row deleted
   // it seems .returning is not supported for knex with sqlite,
   // so we cannot return the row deleted
-  drop(key: string): Promise<number> {
+  delete(key: string): Promise<number> {
     return KeyValueStore()
       .where('key', key)
       .delete();
   },
 
-  dropAll(): Promise<void> {
+  clear(): Promise<void> {
     return KeyValueStore().truncate()
   },
 }

@@ -13,7 +13,7 @@ afterAll(async () => {
 
 describe('Check emptiness', () => {
   test('KeyValue.length() === 0', async () => {
-    expect(await KeyValue.length()).toBe(0);
+    expect(await KeyValue.size()).toBe(0);
   });
 
   test('KeyValue.keys() === []', async () => {
@@ -209,7 +209,7 @@ describe('check getters when not empty', () => {
   });
 
   test('.length() === 3', async () => {
-    expect(await KeyValue.length()).toBe(3);
+    expect(await KeyValue.size()).toBe(3);
   });
 
   test('.keys()', async () => {
@@ -255,21 +255,21 @@ describe('check dropping', () => {
   });
 
   test('.drop() inexistant key', async () => {
-    expect(await KeyValue.drop("inexistant")).toBe(0);
+    expect(await KeyValue.delete("inexistant")).toBe(0);
   });
 
   test('.drop() existent key', async () => {
-    expect(await KeyValue.drop("key")).toEqual(1);
-    expect(await KeyValue.length()).toBe(2);
+    expect(await KeyValue.delete("key")).toEqual(1);
+    expect(await KeyValue.size()).toBe(2);
   });
 
   test('.drop() existent key with json', async () => {
-    expect(await KeyValue.drop("last-epic-slugs")).toEqual(1);
-    expect(await KeyValue.length()).toBe(2);
+    expect(await KeyValue.delete("last-epic-slugs")).toEqual(1);
+    expect(await KeyValue.size()).toBe(2);
   });
 
   test('.dropAll', async () => {
-    await KeyValue.dropAll();
-    expect(await KeyValue.length()).toBe(0);
+    await KeyValue.clear();
+    expect(await KeyValue.size()).toBe(0);
   });
 })
