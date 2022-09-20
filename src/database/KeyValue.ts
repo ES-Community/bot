@@ -1,10 +1,9 @@
 import DB from "./db";
 
 type JSONScalar = boolean | number | string | null;
-type JSONKey = string | number;
-type JSONArray = (JSONScalar | JSONArray | JSONObject)[];
-type JSONObject = Record<string, any>;
-type JSONTypes = JSONScalar | JSONArray | JSONObject;
+type JSONTypes = JSONScalar | JSONObject | JSONArray;
+type JSONObject = { [member: string]: JSONTypes };
+type JSONArray = JSONTypes[];
 
 export interface IKeyValue {
   key: string;
