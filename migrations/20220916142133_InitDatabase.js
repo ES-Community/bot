@@ -5,9 +5,9 @@
 exports.up = function(knex) {
   return knex.schema
     .createTable('kv', table => {
-      table.string('key').notNullable()
-      table.primary('key')
-      table.json('value')
+      table.string('key').notNullable();
+      table.primary('key');
+      table.json('value');
     });
 };
 
@@ -16,5 +16,5 @@ exports.up = function(knex) {
  * @returns { Promise<void> }
  */
 exports.down = function(knex) {
-  return knex.schema.dropTable('kv')
+  return knex.schema.dropTable('kv');
 };
