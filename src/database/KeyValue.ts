@@ -10,6 +10,13 @@ export interface IKeyValue {
   value: JSONTypes;
 }
 
+export enum SearchFlag {
+  Exact = 0b00,
+  StartsWith = 0b01,
+  EndsWith = 0b10,
+  Contains = 0b11,
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const KeyValueStore = <U = never>() => DB<U>('kv');
 
@@ -82,7 +89,7 @@ export const KeyValue = {
    * @param likeKey - case-insensitive
    * @param flag - a 2 binary mask. 0b10 for left %, 0b01 for right %, 0b11 for both
    */
-  search(likeKey :string, flag = 0b11): Promise<IKeyValue[]> {
+  search(likeKey :string, flag: SearchFlag = SearchFlag.Contains): Promise<IKeyValue[]> {
     const left = (0b10 & flag) ? '%' : '';
     const right = (0b01 & flag) ? '%' : '';
 

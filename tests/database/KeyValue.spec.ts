@@ -1,6 +1,6 @@
 import type { Knex } from "knex";
-import fs from 'fs/promises';
-import { DB, config, KeyValue, KeyValueStore } from '#src/database';
+import fs from "fs/promises";
+import { config, DB, KeyValue, KeyValueStore, SearchFlag } from "#src/database";
 
 beforeAll(async () => {
   await fs.rm((config.connection as Knex.Sqlite3ConnectionConfig).filename, {force: true});
@@ -246,15 +246,15 @@ describe('check getters when not empty', () => {
     expect(await KeyValue.has("last-gog-slug")).toBe(true);
   });
 
-  test('.search("LAST", 0b01)', async () => {
-    expect(await KeyValue.search('LAST', 0b01)).toEqual([
+  test('.search("LAST", SearchFlag.StartsWith)', async () => {
+    expect(await KeyValue.search('LAST', SearchFlag.StartsWith)).toEqual([
       {key: 'last-epic-slugs', value: ['spirit-of-the-north-f58a66', 'the-captain']},
       {key: 'last-gog-slug', value: 'tales_of_monkey_island'},
     ]);
   });
 
-  test('.search("slug", 0b10)', async () => {
-    expect(await KeyValue.search('slug', 0b10)).toEqual([
+  test('.search("slug", SearchFlag.EndsWith)', async () => {
+    expect(await KeyValue.search('slug', SearchFlag.EndsWith)).toEqual([
       {key: 'last-gog-slug', value: 'tales_of_monkey_island'},
     ]);
   });
@@ -270,16 +270,25 @@ describe('check getters when not empty', () => {
       {key: 'keywords', value: ['last', 'slug']},
     ]);
   });
+  
+  test('.search exact', async () => {
+    await KeyValue.set('test-exact-key', 100);
+    await KeyValue.set('-test-exact-key-', 50);
+    
+    expect(await KeyValue.search('test-exact-key', SearchFlag.Exact)).toEqual([{key: 'test-exact-key', value: 100}]);
+    expect(await KeyValue.search('Test-Exact-Key', SearchFlag.Exact)).toEqual([{key: 'test-exact-key', value: 100}]);
+  });
 
   test('.search with escaping', async () => {
     await KeyValue.set('50% of 100', 50);
     await KeyValue.set('_underlined_', '# title');
 
     expect(await KeyValue.search('% of')).toEqual([{key: '50% of 100', value: 50}]);
-    expect(await KeyValue.search('ed_', 0b10)).toEqual([{key: '_underlined_', value: '# title'}]);
-    expect(await KeyValue.search('50%', 0b01)).toEqual([{key: '50% of 100', value: 50}]);
-    expect(await KeyValue.search('% of 100', 0b10)).toEqual([{key: '50% of 100', value: 50}]);
-  })
+    expect(await KeyValue.search('ed_', SearchFlag.EndsWith)).toEqual([{key: '_underlined_', value: '# title'}]);
+    expect(await KeyValue.search('50%', SearchFlag.StartsWith)).toEqual([{key: '50% of 100', value: 50}]);
+    expect(await KeyValue.search('% of 100', SearchFlag.EndsWith)).toEqual([{key: '50% of 100', value: 50}]);
+    expect(await KeyValue.search('50% of 100', SearchFlag.Exact)).toEqual([{key: '50% of 100', value: 50}]);
+  });
 });
 
 describe('check dropping', () => {
