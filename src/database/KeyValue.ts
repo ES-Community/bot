@@ -27,27 +27,27 @@ export const KeyValue = {
       .then(values => values[0].key as number);
   },
 
-  keys(): Promise<Iterable<string>> {
-    return KeyValueStore<string>()
+  keys(): Promise<string[]> {
+    return KeyValueStore<string[]>()
       .select('key')
       .pluck('key');
   },
 
-  values(): Promise<Iterable<JSONTypes>> {
-    return KeyValueStore<JSONTypes>()
+  values(): Promise<JSONTypes[]> {
+    return KeyValueStore<JSONTypes[]>()
       .select('value')
       .pluck('value')
       .then(values => values.map((v: string) => JSON.parse(v)));
   },
 
-  entries(): Promise<Iterable<[string, JSONTypes]>> {
+  entries(): Promise<[string, JSONTypes][]> {
     return KeyValueStore<Iterable<IKeyValue>>()
       .select('key', 'value')
       .then(entries => entries.map((kv) => [kv.key, JSON.parse(kv.value)]));
   },
 
-  all(): Promise<Iterable<IKeyValue>> {
-    return KeyValueStore<Iterable<IKeyValue>>()
+  all(): Promise<IKeyValue[]> {
+    return KeyValueStore<IKeyValue[]>()
       .select('key', 'value')
       .then(items => {
         for (const item of items) {
