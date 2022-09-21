@@ -8,4 +8,7 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-CMD [ "node", "build/src/bot.js" ]
+ENV NODE_ENV production
+RUN npm ci --omit=dev
+
+CMD [ "bash", "start.sh" ]
