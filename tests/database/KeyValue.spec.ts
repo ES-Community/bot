@@ -33,12 +33,16 @@ describe('Check emptiness', () => {
   });
 
   test('KeyValue.has("donotexistkey") === false', async () => {
-    expect(await KeyValue.has("donotexistkey")).toEqual(false);
+    expect(await KeyValue.has("donotexistkey")).toBe(false);
   });
 
   test('KeyValue.get("donotexistkey") === undefined', async () => {
-    expect(await KeyValue.get("donotexistkey")).toEqual(undefined);
+    expect(await KeyValue.get("donotexistkey")).toBe(undefined);
   });
+
+  test('KeyValue.search("key") === []', async () => {
+    expect(await KeyValue.search("key")).toEqual([]);
+  })
 });
 
 describe('Check insertion', () => {
@@ -241,6 +245,41 @@ describe('check getters when not empty', () => {
     expect(await KeyValue.has("last-epic-slugs")).toBe(true);
     expect(await KeyValue.has("last-gog-slug")).toBe(true);
   });
+
+  test('.search("LAST", 0b01)', async () => {
+    expect(await KeyValue.search('LAST', 0b01)).toEqual([
+      {key: 'last-epic-slugs', value: ['spirit-of-the-north-f58a66', 'the-captain']},
+      {key: 'last-gog-slug', value: 'tales_of_monkey_island'},
+    ]);
+  });
+
+  test('.search("slug", 0b10)', async () => {
+    expect(await KeyValue.search('slug', 0b10)).toEqual([
+      {key: 'last-gog-slug', value: 'tales_of_monkey_island'},
+    ]);
+  });
+
+  test('.search("kEy")', async () => {
+    await KeyValue.set('LastKeyInserted', 'zbadurg');
+    await KeyValue.set('RandomK', Math.random() * 100);
+    await KeyValue.set('keywords', ['last', 'slug']);
+
+    expect(await KeyValue.search('kEy')).toEqual([
+      {key: 'key', value: 'value'},
+      {key: 'LastKeyInserted', value: 'zbadurg'},
+      {key: 'keywords', value: ['last', 'slug']},
+    ]);
+  });
+
+  test('.search with escaping', async () => {
+    await KeyValue.set('50% of 100', 50);
+    await KeyValue.set('_underlined_', '# title');
+
+    expect(await KeyValue.search('% of')).toEqual([{key: '50% of 100', value: 50}]);
+    expect(await KeyValue.search('ed_', 0b10)).toEqual([{key: '_underlined_', value: '# title'}]);
+    expect(await KeyValue.search('50%', 0b01)).toEqual([{key: '50% of 100', value: 50}]);
+    expect(await KeyValue.search('% of 100', 0b10)).toEqual([{key: '50% of 100', value: 50}]);
+  })
 });
 
 describe('check dropping', () => {

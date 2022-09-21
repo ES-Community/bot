@@ -77,6 +77,32 @@ export const KeyValue = {
       .then(items => items[0]);
   },
 
+  /**
+   * Search in keys with LIKE operator
+   * @param likeKey - case-insensitive
+   * @param flag - a 2 binary mask. 0b10 for left %, 0b01 for right %, 0b11 for both
+   */
+  search(likeKey :string, flag = 0b11): Promise<IKeyValue[]> {
+    const left = (0b10 & flag) ? '%' : '';
+    const right = (0b01 & flag) ? '%' : '';
+
+    const likeKeyEscaped = likeKey
+      .replace(/%/g, '\\%')
+      .replace(/_/g, '\\_')
+    const likePart = `${left}${likeKeyEscaped}${right}`;
+
+    return KeyValueStore<IKeyValue[]>()
+      .select('key', 'value')
+      .whereRaw(`\`key\` LIKE ? ESCAPE ?`, [likePart, '\\'])
+      .then(items => {
+        for (const item of items) {
+          item.value = JSON.parse(item.value);
+        }
+
+        return items;
+      });
+  },
+
   // Promise<number> is the number of row deleted
   // it seems .returning is not supported for knex with sqlite,
   // so we cannot return the row deleted
