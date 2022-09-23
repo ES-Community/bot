@@ -29,10 +29,14 @@ export default new Cron({
 
     for (const game of games) {
       context.logger.info(`Found a new offered game (${game.title})`);
+      
+      const message = new MessageEmbed({ title: game.title, url: game.link });
+      game.thumbnail && message.setThumbnail(game.thumbnail);
+      game.banner && message.setImage(game.banner);
 
       await channel.send(
-        new MessageEmbed({ title: game.title, url: game.link })
-          .setThumbnail(game.thumbnail)
+        message
+          .setDescription(game.description)
           .addField(
             'Début',
             game.discountStartDate.toLocaleDateString('fr-FR', dateFmtOptions),
@@ -59,11 +63,22 @@ interface EpicGamesProducts {
       searchStore: {
         elements: {
           title: string;
+          description: string;
           keyImages: {
-            type: string;
+            type: 'OfferImageWide' | 'OfferImageTall' | 'Thumbnail';
             url: string;
           }[];
           productSlug: string;
+          catalogNs: {
+            mappings: {
+              pageSlug: string,
+              pageType: 'productHome' | 'offer'
+            }[];
+          };
+          offerMappings: {
+            pageSlug: string,
+            pageType: 'productHome' | 'offer'
+          }[];
           price: {
             totalPrice: {
               fmtPrice: {
@@ -99,9 +114,17 @@ interface Game {
    */
   link: string;
   /**
+   * Game description.
+   */
+  description: string;
+  /**
    * Game thumbnail.
    */
-  thumbnail: string;
+  thumbnail?: string;
+  /**
+   * Game banner.
+   */
+  banner?: string;
   /**
    * Game formatted original price.
    */
@@ -121,7 +144,10 @@ const OFFERED_GAMES_QUERY = `query searchStoreQuery($country: String!, $locale: 
     searchStore(category: "games", country: $country, locale: $locale, freeGame: true, onSale: true, count: $count) {
       elements {
         title productSlug
+        description
         keyImages { type url }
+        catalogNs { mappings { pageSlug, pageType } }
+        offerMappings { pageSlug, pageType }
         price(country: $country) {
           totalPrice {
             fmtPrice(locale: $locale) { originalPrice }
@@ -180,6 +206,8 @@ async function getOfferedGames(
     );
     return nowTime - startDate.getTime() < oneDay;
   });
+  
+  // const games = catalog.elements;
 
   if (games.length === 0) {
     return null;
@@ -187,18 +215,37 @@ async function getOfferedGames(
 
   return games.map<Game>((game) => {
     const discount = game.price.lineOffers[0].appliedRules[0];
-    const slug = game.productSlug;
+    let slug = game.productSlug
+      ?? game.offerMappings?.find(i => i.pageType === 'productHome')?.pageSlug
+      ?? game.catalogNs.mappings.find(i => i.pageType === 'productHome')?.pageSlug
+      ?? '';
+    
+    if (!slug) {
+      logger.error(game, 'No slug foundable');
+    }
+  
+    // Sanitize the slug (e.g. sludge-life/home -> sludge-life).
     const slugSlashIndex = slug.indexOf('/');
+    if (slugSlashIndex >= 0) {
+      slug = slug.slice(0, slugSlashIndex);
+    }
+    
+    const link = slug
+      ? `https://www.epicgames.com/store/fr/p/${slug}`
+      : 'https://store.epicgames.com/fr/free-games';
+    
+    let thumbnail = game.keyImages.find((image) => image.type === 'Thumbnail')?.url;
+    thumbnail = thumbnail && encodeURI(thumbnail);
+    
+    let banner = game.keyImages.find((image) => image.type === 'OfferImageWide')?.url;
+    banner = banner && encodeURI(banner);
 
     return {
       title: game.title,
-      // Sanitize the slug (e.g. sludge-life/home -> sludge-life).
-      link: `https://www.epicgames.com/store/fr/p/${
-        slugSlashIndex === -1 ? slug : slug.slice(0, slugSlashIndex)
-      }`,
-      thumbnail: encodeURI(
-        game.keyImages.find((image) => image.type === 'Thumbnail')!.url,
-      ),
+      description: game.description,
+      link: link,
+      thumbnail: thumbnail,
+      banner: banner,
       originalPrice: game.price.totalPrice.fmtPrice.originalPrice,
       discountStartDate: new Date(discount.startDate),
       discountEndDate: new Date(discount.endDate),
