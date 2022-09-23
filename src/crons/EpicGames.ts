@@ -79,6 +79,7 @@ interface EpicGamesProducts {
             pageSlug: string,
             pageType: 'productHome' | 'offer'
           }[];
+          urlSlug: string;
           price: {
             totalPrice: {
               fmtPrice: {
@@ -143,11 +144,13 @@ const OFFERED_GAMES_QUERY = `query searchStoreQuery($country: String!, $locale: 
   Catalog {
     searchStore(category: "games", country: $country, locale: $locale, freeGame: true, onSale: true, count: $count) {
       elements {
-        title productSlug
-        description
-        keyImages { type url }
+        title
+        productSlug
         catalogNs { mappings { pageSlug, pageType } }
         offerMappings { pageSlug, pageType }
+        urlSlug
+        description
+        keyImages { type url }
         price(country: $country) {
           totalPrice {
             fmtPrice(locale: $locale) { originalPrice }
@@ -168,6 +171,7 @@ const oneDay = 1000 * 60 * 60 * 24;
  * Fetches offered games from the Epic Games GraphQL API. If there are any and they
  * were offered between the previous and current cron execution, returns them.
  * @param now - Current date. Comes from cron schedule.
+ * @param logger
  */
 async function getOfferedGames(
   now: Date,
@@ -206,8 +210,6 @@ async function getOfferedGames(
     );
     return nowTime - startDate.getTime() < oneDay;
   });
-  
-  // const games = catalog.elements;
 
   if (games.length === 0) {
     return null;
@@ -216,9 +218,10 @@ async function getOfferedGames(
   return games.map<Game>((game) => {
     const discount = game.price.lineOffers[0].appliedRules[0];
     let slug = game.productSlug
-      ?? game.offerMappings?.find(i => i.pageType === 'productHome')?.pageSlug
-      ?? game.catalogNs.mappings.find(i => i.pageType === 'productHome')?.pageSlug
-      ?? '';
+      || game.offerMappings?.find(i => i.pageType === 'productHome')?.pageSlug
+      || game.catalogNs.mappings?.find(i => i.pageType === 'productHome')?.pageSlug
+      || (!/^[0-9a-f]+$/.test(game.urlSlug) && game.urlSlug)
+      || '';
     
     if (!slug) {
       logger.error(game, 'No slug foundable');
