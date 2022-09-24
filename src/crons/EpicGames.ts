@@ -173,7 +173,7 @@ const oneDay = 1000 * 60 * 60 * 24;
  * @param now - Current date. Comes from cron schedule.
  * @param logger
  */
-async function getOfferedGames(
+export async function getOfferedGames(
   now: Date,
   logger: Logger,
 ): Promise<Game[] | null> {
