@@ -78,7 +78,7 @@ interface CommitStrip {
 async function getRecentCommitStrip(now: Date): Promise<CommitStrip | null> {
   const { body: posts } = await got<WordPressPost[]>(
     'https://www.commitstrip.com/fr/wp-json/wp/v2/posts?per_page=1',
-    { responseType: 'json' },
+    { responseType: 'json', rejectUnauthorized: false },
   );
 
   if (posts.length === 0) {
