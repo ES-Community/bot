@@ -12,6 +12,9 @@ ENV NODE_ENV production
 USER node
 WORKDIR /app
 
+# Create data dir as node user so Docker volume inherits ownership.
+RUN mkdir data
+
 COPY --chown=node:node package*.json knexfile.js start.sh ./
 RUN npm ci --omit=dev && npm cache clean --force
 
