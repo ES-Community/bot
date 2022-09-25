@@ -109,4 +109,4 @@ build
 .idea
 
 # Project specific
-*.sqlite3
+/data
