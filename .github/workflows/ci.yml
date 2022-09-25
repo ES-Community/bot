@@ -29,6 +29,9 @@ jobs:
       - name: Check types
         run: npm run check-types
 
+      - name: Check formatting
+        run: npm run check-format
+
   test:
     runs-on: ubuntu-latest
     steps:

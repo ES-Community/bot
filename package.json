@@ -4,13 +4,14 @@
   "private": true,
   "scripts": {
     "build": "tsc -p tsconfig.prod.json",
+    "check-format": "prettier --check .",
     "check-types": "tsc --noEmit",
     "heroku-postbuild": "npm run build",
-    "format": "prettier --write src tests",
+    "format": "prettier --write .",
     "lint": "eslint src --ext ts",
     "lint-fix": "npm run lint -- --fix",
     "start": "nodemon --watch \"src/**/*.ts\" -e ts --exec \"ts-node -r dotenv/config src/bot.ts | pino-pretty\"",
-    "test": "npm run test-only && npm run lint && npm run check-types",
+    "test": "npm run test-only && npm run lint && npm run check-types && npm run check-format",
     "test-only": "jest",
     "test-coverage": "jest --coverage"
   },

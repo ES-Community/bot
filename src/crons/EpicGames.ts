@@ -29,7 +29,7 @@ export default new Cron({
 
     for (const game of games) {
       context.logger.info(`Found a new offered game (${game.title})`);
-      
+
       const message = new MessageEmbed({ title: game.title, url: game.link });
       game.thumbnail && message.setThumbnail(game.thumbnail);
       game.banner && message.setImage(game.banner);
@@ -71,13 +71,13 @@ interface EpicGamesProducts {
           productSlug: string;
           catalogNs: {
             mappings: {
-              pageSlug: string,
-              pageType: 'productHome' | 'offer'
+              pageSlug: string;
+              pageType: 'productHome' | 'offer';
             }[];
           };
           offerMappings: {
-            pageSlug: string,
-            pageType: 'productHome' | 'offer'
+            pageSlug: string;
+            pageType: 'productHome' | 'offer';
           }[];
           urlSlug: string;
           price: {
@@ -217,30 +217,36 @@ export async function getOfferedGames(
 
   return games.map<Game>((game) => {
     const discount = game.price.lineOffers[0].appliedRules[0];
-    let slug = game.productSlug
-      || game.offerMappings?.find(i => i.pageType === 'productHome')?.pageSlug
-      || game.catalogNs.mappings?.find(i => i.pageType === 'productHome')?.pageSlug
-      || (!/^[0-9a-f]+$/.test(game.urlSlug) && game.urlSlug)
-      || '';
-    
+    let slug =
+      game.productSlug ||
+      game.offerMappings?.find((i) => i.pageType === 'productHome')?.pageSlug ||
+      game.catalogNs.mappings?.find((i) => i.pageType === 'productHome')
+        ?.pageSlug ||
+      (!/^[0-9a-f]+$/.test(game.urlSlug) && game.urlSlug) ||
+      '';
+
     if (!slug) {
       logger.error(game, 'No slug foundable');
     }
-  
+
     // Sanitize the slug (e.g. sludge-life/home -> sludge-life).
     const slugSlashIndex = slug.indexOf('/');
     if (slugSlashIndex >= 0) {
       slug = slug.slice(0, slugSlashIndex);
     }
-    
+
     const link = slug
       ? `https://www.epicgames.com/store/fr/p/${slug}`
       : 'https://store.epicgames.com/fr/free-games';
-    
-    let thumbnail = game.keyImages.find((image) => image.type === 'Thumbnail')?.url;
+
+    let thumbnail = game.keyImages.find(
+      (image) => image.type === 'Thumbnail',
+    )?.url;
     thumbnail = thumbnail && encodeURI(thumbnail);
-    
-    let banner = game.keyImages.find((image) => image.type === 'OfferImageWide')?.url;
+
+    let banner = game.keyImages.find(
+      (image) => image.type === 'OfferImageWide',
+    )?.url;
     banner = banner && encodeURI(banner);
 
     return {
