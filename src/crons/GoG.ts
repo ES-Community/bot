@@ -1,24 +1,24 @@
-import { MessageEmbed } from "discord.js";
-import got from "got";
-import { Logger } from "pino";
+import { MessageEmbed } from 'discord.js';
+import got from 'got';
+import { Logger } from 'pino';
 
-import { Cron, findTextChannelByName } from "../framework";
-import { parse } from "node-html-parser";
+import { Cron, findTextChannelByName } from '../framework';
+import { parse } from 'node-html-parser';
 
 const dateFmtOptions: Intl.DateTimeFormatOptions = {
-  timeZone: "Europe/Paris",
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-  hour: "numeric",
-  minute: "numeric"
+  timeZone: 'Europe/Paris',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
 };
 
 export default new Cron({
   enabled: true,
-  name: "GoG",
+  name: 'GoG',
   description:
-    "Vérifie tous les jours à 17h30 (Paris) si GoG offre un jeu (promotion gratuite) et alerte dans #jeux",
+    'Vérifie tous les jours à 17h30 (Paris) si GoG offre un jeu (promotion gratuite) et alerte dans #jeux',
   schedule: '30 17 * * *',
   // schedule: "* * * * *", // switch for testing
   async handle(context) {
@@ -26,9 +26,9 @@ export default new Cron({
     if (!game) {
       return;
     }
-    
-    const channel = findTextChannelByName(context.client.channels, "jeux");
-    
+
+    const channel = findTextChannelByName(context.client.channels, 'jeux');
+
     await channel.send(
       new MessageEmbed()
         .setTitle(game.title)
@@ -37,15 +37,15 @@ export default new Cron({
         .setThumbnail(game.thumbnail)
         .setImage(game.banner)
         .addField(
-          "Fin",
-          game.discountEndDate.toLocaleDateString("fr-FR", dateFmtOptions),
-          true
+          'Fin',
+          game.discountEndDate.toLocaleDateString('fr-FR', dateFmtOptions),
+          true,
         )
-        .addField("Prix", `${game.originalPrice}€ → **Gratuit**`)
-        .addField("Note", `⭐ ${game.rating}`)
-        .setTimestamp()
+        .addField('Prix', `${game.originalPrice}€ → **Gratuit**`)
+        .addField('Note', `⭐ ${game.rating}`)
+        .setTimestamp(),
     );
-  }
+  },
 });
 
 /**
@@ -70,39 +70,53 @@ interface Game {
 async function getOfferedGame(logger: Logger): Promise<Game | null> {
   const GOG_GOT_OPTIONS = {
     headers: {
-      "Accept-Language": "fr,fr-FR;q=0.8,fr-FR;q=0.7,en-US;q=0.5,en-US;q=0.3,en;q=0.2"
-    }
+      'Accept-Language':
+        'fr,fr-FR;q=0.8,fr-FR;q=0.7,en-US;q=0.5,en-US;q=0.3,en;q=0.2',
+    },
   };
-  const { body: homeBody } = await got<string>("https://www.gog.com/#giveaway", GOG_GOT_OPTIONS);
-  
+  const { body: homeBody } = await got<string>(
+    'https://www.gog.com/#giveaway',
+    GOG_GOT_OPTIONS,
+  );
+
   if (!homeBody) return null;
   const html = parse(homeBody);
   if (!html) return null;
-  const SEOLink = html.querySelector("a#giveaway");
+  const SEOLink = html.querySelector('a#giveaway');
   if (!SEOLink) return null;
   const endTimestamp = Number(
     html
-      .querySelector(".giveaway-banner__footer gog-countdown-timer")
-      ?.getAttribute("end-date")
+      .querySelector('.giveaway-banner__footer gog-countdown-timer')
+      ?.getAttribute('end-date'),
   );
-  
+
   const { body: gameBody } = await got<string>(
-    `https://www.gog.com${SEOLink.getAttribute("ng-href")}`,
-    GOG_GOT_OPTIONS
+    `https://www.gog.com${SEOLink.getAttribute('ng-href')}`,
+    GOG_GOT_OPTIONS,
   );
   if (!gameBody) return null;
   const gameHTML = parse(gameBody);
   if (!gameHTML) return null;
-  
-  const ldJSONNode = gameHTML.querySelector("script[type=\"application/ld+json\"]");
-  const gameJSON = JSON.parse(ldJSONNode?.innerHTML ?? "");
+
+  const ldJSONNode = gameHTML.querySelector(
+    'script[type="application/ld+json"]',
+  );
+  const gameJSON = JSON.parse(ldJSONNode?.innerHTML ?? '');
   if (!gameJSON) return null;
-  
-  const description = gameHTML.querySelector(".content-summary-item__description")?.innerText ?? "";
-  const banner = gameHTML.querySelector("head meta[property=\"og:image\"]")?.getAttribute("content") ?? "";
-  
-  logger.info({ data: { gameJSON, description, banner } }, "Offered games response");
-  
+
+  const description =
+    gameHTML.querySelector('.content-summary-item__description')?.innerText ??
+    '';
+  const banner =
+    gameHTML
+      .querySelector('head meta[property="og:image"]')
+      ?.getAttribute('content') ?? '';
+
+  logger.info(
+    { data: { gameJSON, description, banner } },
+    'Offered games response',
+  );
+
   return {
     title: gameJSON.name,
     description,

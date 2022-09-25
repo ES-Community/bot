@@ -1,4 +1,4 @@
-import DB from "./db";
+import DB from './db';
 
 type JSONScalar = boolean | number | string | null;
 type JSONTypes = JSONScalar | JSONObject | JSONArray;
@@ -23,33 +23,31 @@ export const KeyValueStore = <U = never>() => DB<U>('kv');
 export const KeyValue = {
   size(): Promise<number> {
     return KeyValueStore<number>()
-      .count('key', {as: 'key'})
-      .then(values => values[0].key as number);
+      .count('key', { as: 'key' })
+      .then((values) => values[0].key as number);
   },
 
   keys(): Promise<string[]> {
-    return KeyValueStore<string[]>()
-      .select('key')
-      .pluck('key');
+    return KeyValueStore<string[]>().select('key').pluck('key');
   },
 
   values(): Promise<JSONTypes[]> {
     return KeyValueStore<JSONTypes[]>()
       .select('value')
       .pluck('value')
-      .then(values => values.map((v: string) => JSON.parse(v)));
+      .then((values) => values.map((v: string) => JSON.parse(v)));
   },
 
   entries(): Promise<[string, JSONTypes][]> {
     return KeyValueStore<Iterable<IKeyValue>>()
       .select('key', 'value')
-      .then(entries => entries.map((kv) => [kv.key, JSON.parse(kv.value)]));
+      .then((entries) => entries.map((kv) => [kv.key, JSON.parse(kv.value)]));
   },
 
   all(): Promise<IKeyValue[]> {
     return KeyValueStore<IKeyValue[]>()
       .select('key', 'value')
-      .then(items => {
+      .then((items) => {
         for (const item of items) {
           item.value = JSON.parse(item.value);
         }
@@ -67,7 +65,10 @@ export const KeyValue = {
   },
 
   async get(key: string): Promise<JSONTypes | undefined> {
-    const item = await KeyValueStore<string>().select('value').where('key', key).first();
+    const item = await KeyValueStore<string>()
+      .select('value')
+      .where('key', key)
+      .first();
     if (!item) return item;
 
     return JSON.parse(item.value);
@@ -75,13 +76,14 @@ export const KeyValue = {
 
   /// the number returned is the row id from sqlite
   async set(key: string, value: JSONTypes): Promise<number> {
-    return KeyValueStore<IKeyValue>().insert({
-      key: key,
-      value: JSON.stringify(value)
-    })
+    return KeyValueStore<IKeyValue>()
+      .insert({
+        key: key,
+        value: JSON.stringify(value),
+      })
       .onConflict('key')
       .merge()
-      .then(items => items[0]);
+      .then((items) => items[0]);
   },
 
   /**
@@ -89,19 +91,20 @@ export const KeyValue = {
    * @param likeKey - case-insensitive
    * @param flag - a 2 binary mask. 0b10 for left %, 0b01 for right %, 0b11 for both
    */
-  search(likeKey :string, flag: SearchFlag = SearchFlag.Contains): Promise<IKeyValue[]> {
-    const left = (0b10 & flag) ? '%' : '';
-    const right = (0b01 & flag) ? '%' : '';
+  search(
+    likeKey: string,
+    flag: SearchFlag = SearchFlag.Contains,
+  ): Promise<IKeyValue[]> {
+    const left = 0b10 & flag ? '%' : '';
+    const right = 0b01 & flag ? '%' : '';
 
-    const likeKeyEscaped = likeKey
-      .replace(/%/g, '\\%')
-      .replace(/_/g, '\\_')
+    const likeKeyEscaped = likeKey.replace(/%/g, '\\%').replace(/_/g, '\\_');
     const likePart = `${left}${likeKeyEscaped}${right}`;
 
     return KeyValueStore<IKeyValue[]>()
       .select('key', 'value')
       .whereRaw(`\`key\` LIKE ? ESCAPE ?`, [likePart, '\\'])
-      .then(items => {
+      .then((items) => {
         for (const item of items) {
           item.value = JSON.parse(item.value);
         }
@@ -114,12 +117,10 @@ export const KeyValue = {
   // it seems .returning is not supported for knex with sqlite,
   // so we cannot return the row deleted
   delete(key: string): Promise<number> {
-    return KeyValueStore()
-      .where('key', key)
-      .delete();
+    return KeyValueStore().where('key', key).delete();
   },
 
   clear(): Promise<void> {
-    return KeyValueStore().truncate()
+    return KeyValueStore().truncate();
   },
-}
+};

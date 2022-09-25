@@ -122,9 +122,12 @@ Si besoin de stocker des settings basique, la table `kv` est disponible avec l'a
 Les clés doivent être des `string`, les valeurs peuvent être n'importe quoi, sachant que ce sera sérialisé / désérialisé de JSON (donc pas de données circulaires, pas de fonctions).
 
 ```typescript
-import { KeyValue } from "#src/database/";
+import { KeyValue } from '#src/database/';
 
-await KeyValue.set('MyCron-LastRunResult', 'https://github.com/ES-Community/bot/issues/17');
+await KeyValue.set(
+  'MyCron-LastRunResult',
+  'https://github.com/ES-Community/bot/issues/17',
+);
 const myLastResult = await KeyValue.get('MyCron-LastRunResult');
 
 if (result === myLastResult) return;
