@@ -9,6 +9,6 @@ COPY . .
 RUN npm run build
 
 ENV NODE_ENV production
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev && npm cache clean --force
 
 CMD [ "bash", "start.sh" ]
