@@ -5,4 +5,4 @@ node_modules
 tests
 
 .env
-*.sqlite3
+data
