@@ -1,8 +1,10 @@
+# Folders
 .git
 .github
 build
+data
 node_modules
 tests
 
+# Files
 .env
-data

@@ -1,14 +1,16 @@
-FROM node:16.17.0
+FROM node:16.17.0-bullseye-slim
+
+USER node
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY --chown=node:node package*.json ./
 RUN npm ci
 
-COPY . .
+COPY --chown=node:node . .
 RUN npm run build
 
 ENV NODE_ENV production
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm ci --only=production && npm cache clean --force
 
 CMD [ "bash", "start.sh" ]
