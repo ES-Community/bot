@@ -3,7 +3,7 @@ import got from 'got';
 import { decode } from 'html-entities';
 
 import { Cron, findTextChannelByName } from '../framework';
-import { KeyValue } from '#src/database';
+import { KeyValue } from '../database';
 
 export default new Cron({
   enabled: true,
@@ -85,7 +85,7 @@ interface CommitStrip {
 async function getLastCommitStrip(): Promise<CommitStrip | null> {
   const { body: posts } = await got<WordPressPost[]>(
     'https://www.commitstrip.com/fr/wp-json/wp/v2/posts?per_page=1',
-    { responseType: 'json', rejectUnauthorized: false },
+    { responseType: 'json', https: { rejectUnauthorized: false } },
   );
 
   if (posts.length === 0) {

@@ -4,7 +4,7 @@ import { Logger } from 'pino';
 
 import { Cron, findTextChannelByName } from '../framework';
 import { parse } from 'node-html-parser';
-import { KeyValue } from '#src/database';
+import { KeyValue } from '../database';
 
 const dateFmtOptions: Intl.DateTimeFormatOptions = {
   timeZone: 'Europe/Paris',
