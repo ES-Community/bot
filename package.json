@@ -24,12 +24,14 @@
   },
   "homepage": "https://github.com/ES-Community/bot#readme",
   "dependencies": {
+    "better-sqlite3": "^7.6.2",
     "cron": "^1.8.2",
     "discord.js": "^12.5.3",
     "dotenv": "^10.0.0",
     "emoji-regex": "^9.2.2",
     "got": "^11.8.2",
     "html-entities": "^2.3.2",
+    "knex": "^2.3.0",
     "node-html-parser": "^5.3.3",
     "pino": "^6.12.0"
   },

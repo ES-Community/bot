@@ -11,13 +11,19 @@
 
 ### Préparation de l'environnement
 
-Installez les dépendances avec npm:
+Installez les dépendances avec npm :
 
 ```console
 npm ci
 ```
 
-Créez un fichier `.env` avec votre token de bot:
+Préparation de la base de donnée ([knex](https://knexjs.org/guide/migrations.html#migration-cli) - sqlite) :
+
+```console
+npx knex migrate:latest
+```
+
+Créez un fichier `.env` avec votre token de bot :
 
 ```env
 DISCORD_TOKEN=votretoken
@@ -102,4 +108,25 @@ export default new Cron({
     // Code exécuté selon le programme
   },
 });
+```
+
+#### Database
+
+On utilise `knex.js`.
+
+Pour créer une nouvelle migration : `npx knex migrate:make migration_name`
+Doc pour le SchemaBuilder : https://knexjs.org/guide/schema-builder.html
+
+Si besoin de stocker des settings basique, la table `kv` est disponible avec l'api `KeyValue` (proche d'une `Map`, mais qui requête la DB).
+
+Les clés doivent être des `string`, les valeurs peuvent être n'importe quoi, sachant que ce sera sérialisé / désérialisé de JSON (donc pas de données circulaires, pas de fonctions).
+
+```typescript
+import { KeyValue } from "#src/database/";
+
+await KeyValue.set('MyCron-LastRunResult', 'https://github.com/ES-Community/bot/issues/17');
+const myLastResult = await KeyValue.get('MyCron-LastRunResult');
+
+if (result === myLastResult) return;
+notify(result);
 ```
