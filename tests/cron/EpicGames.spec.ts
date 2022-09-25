@@ -1,7 +1,7 @@
-import pino from 'pino';
 import { getOfferedGames } from '#src/crons/EpicGames';
 
-const logger = pino();
+import { testLogger } from '../utils';
+
 const oneDay = 1000 * 60 * 60 * 24;
 
 test('getOfferedGames', async () => {
@@ -9,7 +9,7 @@ test('getOfferedGames', async () => {
 
   let lastGames;
   for (const date of dates) {
-    const games = await getOfferedGames(date, logger);
+    const games = await getOfferedGames(date, testLogger);
     expect(games === null || Array.isArray(games)).toBe(true);
 
     if (!games) continue;
@@ -23,8 +23,6 @@ test('getOfferedGames', async () => {
       }
     }
     lastGames = games;
-
-    logger.info({ date, games }, 'found epic for date');
 
     for (const game of games) {
       expect(game.title).toBeTruthy();
