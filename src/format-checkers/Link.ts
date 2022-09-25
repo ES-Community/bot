@@ -1,5 +1,5 @@
 import { FormatChecker } from '../framework';
-import createRegExp from 'emoji-regex/text';
+import createRegExp from 'emoji-regex';
 
 const unicodeEmojiRegexp = createRegExp().source;
 const urlRegexp =
