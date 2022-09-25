@@ -8,3 +8,4 @@ tests
 
 # Files
 .env
+Dockerfile
