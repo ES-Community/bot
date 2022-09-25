@@ -44,5 +44,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Prepare database
+        run: npx knex migrate:latest
+
       - name: Run tests
         run: npm run test-only
