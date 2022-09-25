@@ -23,7 +23,7 @@ export default new Cron({
   async handle(context) {
     const games = await getOfferedGames(context.date, context.logger);
 
-    const rawLastResults = (await KeyValue.get('Last-Cron-Epic')) as string[];
+    const rawLastResults = await KeyValue.get<string[]>('Last-Cron-Epic');
     const lastGames = new Set<string>(rawLastResults);
     const gamesToNotify = games.filter((g) => !lastGames.has(g.id));
     await KeyValue.set(

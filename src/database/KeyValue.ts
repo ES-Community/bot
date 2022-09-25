@@ -5,9 +5,9 @@ type JSONTypes = JSONScalar | JSONObject | JSONArray;
 type JSONObject = { [member: string]: JSONTypes };
 type JSONArray = JSONTypes[];
 
-export interface IKeyValue {
+export interface IKeyValue<T extends JSONTypes = JSONTypes> {
   key: string;
-  value: JSONTypes;
+  value: T;
 }
 
 export enum SearchFlag {
@@ -31,20 +31,20 @@ export const KeyValue = {
     return KeyValueStore<string[]>().select('key').pluck('key');
   },
 
-  values(): Promise<JSONTypes[]> {
+  values<T extends JSONTypes = JSONTypes>(): Promise<T[]> {
     return KeyValueStore<JSONTypes[]>()
       .select('value')
       .pluck('value')
       .then((values) => values.map((v: string) => JSON.parse(v)));
   },
 
-  entries(): Promise<[string, JSONTypes][]> {
+  entries<T extends JSONTypes = JSONTypes>(): Promise<[string, T][]> {
     return KeyValueStore<Iterable<IKeyValue>>()
       .select('key', 'value')
       .then((entries) => entries.map((kv) => [kv.key, JSON.parse(kv.value)]));
   },
 
-  all(): Promise<IKeyValue[]> {
+  all<T extends JSONTypes = JSONTypes>(): Promise<IKeyValue<T>[]> {
     return KeyValueStore<IKeyValue[]>()
       .select('key', 'value')
       .then((items) => {
@@ -64,7 +64,9 @@ export const KeyValue = {
       .then(Boolean);
   },
 
-  async get(key: string): Promise<JSONTypes | undefined> {
+  async get<T extends JSONTypes = JSONTypes>(
+    key: string,
+  ): Promise<T | undefined> {
     const item = await KeyValueStore<string>()
       .select('value')
       .where('key', key)
@@ -91,10 +93,10 @@ export const KeyValue = {
    * @param likeKey - case-insensitive
    * @param flag - a 2 binary mask. 0b10 for left %, 0b01 for right %, 0b11 for both
    */
-  search(
+  search<T extends JSONTypes = JSONTypes>(
     likeKey: string,
     flag: SearchFlag = SearchFlag.Contains,
-  ): Promise<IKeyValue[]> {
+  ): Promise<IKeyValue<T>[]> {
     const left = 0b10 & flag ? '%' : '';
     const right = 0b01 & flag ? '%' : '';
 

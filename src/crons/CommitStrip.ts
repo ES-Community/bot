@@ -3,27 +3,35 @@ import got from 'got';
 import { decode } from 'html-entities';
 
 import { Cron, findTextChannelByName } from '../framework';
+import { KeyValue } from '#src/database';
 
 export default new Cron({
   enabled: true,
   name: 'CommitStrip',
   description:
     'Vérifie toutes les 30 minutes si un nouveau CommitStrip est sorti et le poste dans #gif',
-  schedule: '*/30 * * * *',
+  schedule: '5,35 * * * *',
   async handle(context) {
-    const latestCommitStrip = await getRecentCommitStrip(context.date);
-    if (!latestCommitStrip) {
-      return;
-    }
-    context.logger.info(`Found a new CommitStrip (${latestCommitStrip.id})`);
+    const strip = await getLastCommitStrip();
+
+    // vérifie le strip trouvé avec la dernière entrée
+    const lastStrip = await KeyValue.get<number>('Last-Cron-CommitStrip');
+    const gameStoreIdentity = strip?.id ?? null;
+    if (lastStrip === gameStoreIdentity) return; // skip si identique
+
+    await KeyValue.set('Last-Cron-CommitStrip', gameStoreIdentity); // met à jour sinon
+
+    if (!strip) return; // skip si pas de strip
+
+    context.logger.info(`Found a new CommitStrip (${strip.id})`);
 
     const channel = findTextChannelByName(context.client.channels, 'gif');
 
     await channel.send(
       new MessageEmbed()
-        .setTitle(latestCommitStrip.title)
-        .setURL(latestCommitStrip.link)
-        .setImage(latestCommitStrip.imageUrl),
+        .setTitle(strip.title)
+        .setURL(strip.link)
+        .setImage(strip.imageUrl),
     );
   },
 });
@@ -70,12 +78,11 @@ interface CommitStrip {
 }
 
 /**
- * Fetches the most recent post from the WordPress API. If there is one and it
+ * Fetches the most recent post from the WordPress API. If there is one, and it
  * was posted between the previous and current cron execution, returns it.
  * Otherwise, or if the post does not contain any image URL, returns null.
- * @param now - Current date. Comes from cron schedule.
  */
-async function getRecentCommitStrip(now: Date): Promise<CommitStrip | null> {
+async function getLastCommitStrip(): Promise<CommitStrip | null> {
   const { body: posts } = await got<WordPressPost[]>(
     'https://www.commitstrip.com/fr/wp-json/wp/v2/posts?per_page=1',
     { responseType: 'json', rejectUnauthorized: false },
@@ -86,16 +93,7 @@ async function getRecentCommitStrip(now: Date): Promise<CommitStrip | null> {
   }
 
   const [strip] = posts;
-
   const stripDate = new Date(strip.date_gmt + '.000Z');
-  const stripTime = stripDate.getTime();
-  const nowTime = now.getTime();
-  const thirtyMinutes = 1000 * 60 * 30;
-
-  if (nowTime - stripTime > thirtyMinutes) {
-    // Ignore if the strip was not posted in the last 30 minutes
-    return null;
-  }
 
   const stripImageUrlReg = /src="([^"]+)"/;
   const urlMatch = stripImageUrlReg.exec(strip.content.rendered);

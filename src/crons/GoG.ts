@@ -4,7 +4,7 @@ import { Logger } from 'pino';
 
 import { Cron, findTextChannelByName } from '../framework';
 import { parse } from 'node-html-parser';
-import { KeyValue } from "#src/database";
+import { KeyValue } from '#src/database';
 
 const dateFmtOptions: Intl.DateTimeFormatOptions = {
   timeZone: 'Europe/Paris',
@@ -24,14 +24,14 @@ export default new Cron({
   // schedule: "* * * * *", // switch for testing
   async handle(context) {
     const game = await getOfferedGame(context.logger);
-    
+
     // vérifie le jeu trouvé avec la dernière entrée
-    const lastGame = await KeyValue.get('Last-Cron-GOG') as unknown as string;
+    const lastGame = await KeyValue.get<string>('Last-Cron-GOG');
     const gameStoreIdentity = game?.title ?? null;
     if (lastGame === gameStoreIdentity) return; // skip si identique
-    
-    await KeyValue.set('Last-Cron-GOG', gameStoreIdentity) // met à jour sinon
-    
+
+    await KeyValue.set('Last-Cron-GOG', gameStoreIdentity); // met à jour sinon
+
     if (!game) return; // skip si pas de jeu
 
     const channel = findTextChannelByName(context.client.channels, 'jeux');
