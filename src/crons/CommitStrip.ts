@@ -16,10 +16,10 @@ export default new Cron({
 
     // vérifie le strip trouvé avec la dernière entrée
     const lastStrip = await KeyValue.get<number>('Last-Cron-CommitStrip');
-    const gameStoreIdentity = strip?.id ?? null;
-    if (lastStrip === gameStoreIdentity) return; // skip si identique
+    const stripStoreIdentity = strip?.id ?? null;
+    if (lastStrip === stripStoreIdentity) return; // skip si identique
 
-    await KeyValue.set('Last-Cron-CommitStrip', gameStoreIdentity); // met à jour sinon
+    await KeyValue.set('Last-Cron-CommitStrip', stripStoreIdentity); // met à jour sinon
 
     if (!strip) return; // skip si pas de strip
 
