@@ -10,7 +10,7 @@ test('getOfferedGames', async () => {
   let lastGames;
   for (const date of dates) {
     const games = await getOfferedGames(date, testLogger);
-    expect(games === null || Array.isArray(games)).toBe(true);
+    expect(Array.isArray(games)).toBe(true);
 
     if (!games) continue;
 
@@ -25,6 +25,9 @@ test('getOfferedGames', async () => {
     lastGames = games;
 
     for (const game of games) {
+      expect(game.id).toBeTruthy();
+      expect(typeof game.id).toBe('string');
+
       expect(game.title).toBeTruthy();
       expect(typeof game.title).toBe('string');
 

@@ -3,6 +3,7 @@ import got from 'got';
 import { Logger } from 'pino';
 
 import { Cron, findTextChannelByName } from '../framework';
+import { KeyValue } from '../database';
 
 const dateFmtOptions: Intl.DateTimeFormatOptions = {
   timeZone: 'Europe/Paris',
@@ -17,17 +18,22 @@ export default new Cron({
   enabled: true,
   name: 'EpicGames',
   description:
-    'Vérifie tous les jours à 17h30 (Paris) si Epic Games offre un jeu (promotion gratuite) et alerte dans #jeux',
-  schedule: '30 17 * * *',
+    'Vérifie toutes les demi heures si Epic Games offre un jeu (promotion gratuite) et alerte dans #jeux',
+  schedule: '5,35 * * * *',
   async handle(context) {
     const games = await getOfferedGames(context.date, context.logger);
-    if (!games) {
-      return;
-    }
+
+    const rawLastResults = await KeyValue.get<string[]>('Last-Cron-Epic');
+    const lastGames = new Set<string>(rawLastResults);
+    const gamesToNotify = games.filter((g) => !lastGames.has(g.id));
+    await KeyValue.set(
+      'Last-Cron-Epic',
+      games.map((g) => g.id),
+    );
 
     const channel = findTextChannelByName(context.client.channels, 'jeux');
 
-    for (const game of games) {
+    for (const game of gamesToNotify) {
       context.logger.info(`Found a new offered game (${game.title})`);
 
       const message = new MessageEmbed({ title: game.title, url: game.link });
@@ -62,6 +68,7 @@ interface EpicGamesProducts {
     Catalog: {
       searchStore: {
         elements: {
+          id: string;
           title: string;
           description: string;
           keyImages: {
@@ -107,6 +114,10 @@ interface EpicGamesProducts {
  */
 interface Game {
   /**
+   * Game id.
+   */
+  id: string;
+  /**
    * Game title.
    */
   title: string;
@@ -144,6 +155,7 @@ const OFFERED_GAMES_QUERY = `query searchStoreQuery($country: String!, $locale: 
   Catalog {
     searchStore(category: "games", country: $country, locale: $locale, freeGame: true, onSale: true, count: $count) {
       elements {
+        id
         title
         productSlug
         catalogNs { mappings { pageSlug, pageType } }
@@ -165,8 +177,6 @@ const OFFERED_GAMES_QUERY = `query searchStoreQuery($country: String!, $locale: 
   }
 }`;
 
-const oneDay = 1000 * 60 * 60 * 24;
-
 /**
  * Fetches offered games from the Epic Games GraphQL API. If there are any and they
  * were offered between the previous and current cron execution, returns them.
@@ -176,7 +186,7 @@ const oneDay = 1000 * 60 * 60 * 24;
 export async function getOfferedGames(
   now: Date,
   logger: Logger,
-): Promise<Game[] | null> {
+): Promise<Game[]> {
   const { body } = await got<EpicGamesProducts>(
     'https://www.epicgames.com/graphql',
     {
@@ -198,22 +208,21 @@ export async function getOfferedGames(
   const catalog = body.data.Catalog.searchStore;
 
   if (catalog.paging.total === 0) {
-    return null;
+    return [];
   }
 
   const nowTime = now.getTime();
 
   // Keep only the games that were offered in the last day.
-  const games = catalog.elements.filter((game) => {
-    const startDate = new Date(
-      game.price.lineOffers[0].appliedRules[0].startDate,
-    );
-    return nowTime - startDate.getTime() < oneDay;
-  });
+  const games = (catalog.elements ?? []).filter((game) => {
+    const rule = game.price.lineOffers[0].appliedRules[0];
+    const [startDate, endDate] = [
+      new Date(rule.startDate),
+      new Date(rule.endDate),
+    ];
 
-  if (games.length === 0) {
-    return null;
-  }
+    return startDate.getTime() < nowTime && nowTime < endDate.getTime();
+  });
 
   return games.map<Game>((game) => {
     const discount = game.price.lineOffers[0].appliedRules[0];
@@ -250,6 +259,7 @@ export async function getOfferedGames(
     banner = banner && encodeURI(banner);
 
     return {
+      id: game.id,
       title: game.title,
       description: game.description,
       link: link,

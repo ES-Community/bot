@@ -4,6 +4,7 @@ import { Logger } from 'pino';
 
 import { Cron, findTextChannelByName } from '../framework';
 import { parse } from 'node-html-parser';
+import { KeyValue } from '../database';
 
 const dateFmtOptions: Intl.DateTimeFormatOptions = {
   timeZone: 'Europe/Paris',
@@ -18,14 +19,20 @@ export default new Cron({
   enabled: true,
   name: 'GoG',
   description:
-    'Vérifie tous les jours à 17h30 (Paris) si GoG offre un jeu (promotion gratuite) et alerte dans #jeux',
-  schedule: '30 17 * * *',
+    'Vérifie toutes les demi heures si GoG offre un jeu (promotion gratuite) et alerte dans #jeux',
+  schedule: '5,35 * * * *',
   // schedule: "* * * * *", // switch for testing
   async handle(context) {
     const game = await getOfferedGame(context.logger);
-    if (!game) {
-      return;
-    }
+
+    // vérifie le jeu trouvé avec la dernière entrée
+    const lastGame = await KeyValue.get<string>('Last-Cron-GOG');
+    const gameStoreIdentity = game?.title ?? null;
+    if (lastGame === gameStoreIdentity) return; // skip si identique
+
+    await KeyValue.set('Last-Cron-GOG', gameStoreIdentity); // met à jour sinon
+
+    if (!game) return; // skip si pas de jeu
 
     const channel = findTextChannelByName(context.client.channels, 'jeux');
 
@@ -49,7 +56,7 @@ export default new Cron({
 });
 
 /**
- * Game information extracted from the GoG Game (prerendered HTML scrapping).
+ * Game information extracted from the GoG Game (pre-rendered HTML scrapping).
  */
 interface Game {
   title: string;
@@ -63,7 +70,7 @@ interface Game {
 }
 
 /**
- * Fetches offered games from the Epic Games GraphQL API. If there are any and they
+ * Fetches offered games from the Epic Games GraphQL API. If there are any, and they
  * were offered between the previous and current cron execution, returns them.
  * @param logger
  */
