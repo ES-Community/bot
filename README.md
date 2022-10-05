@@ -5,7 +5,7 @@
 ### Prérequis
 
 - Node.js v16
-- npm v7
+- npm v8
 - Un bot Discord installé sur une copie du serveur ES Community.
   - Template: https://discord.new/T3mtuFqjR8Tm
 
