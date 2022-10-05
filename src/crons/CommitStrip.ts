@@ -1,4 +1,4 @@
-import { MessageEmbed } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
 import got from 'got';
 import { decode } from 'html-entities';
 
@@ -27,12 +27,14 @@ export default new Cron({
 
     const channel = findTextChannelByName(context.client.channels, 'gif');
 
-    await channel.send(
-      new MessageEmbed()
-        .setTitle(strip.title)
-        .setURL(strip.link)
-        .setImage(strip.imageUrl),
-    );
+    await channel.send({
+      embeds: [
+        new EmbedBuilder()
+          .setTitle(strip.title)
+          .setURL(strip.link)
+          .setImage(strip.imageUrl),
+      ],
+    });
   },
 });
 

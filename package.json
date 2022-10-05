@@ -27,7 +27,7 @@
   "dependencies": {
     "better-sqlite3": "^7.6.2",
     "cron": "^2.1.0",
-    "discord.js": "^12.5.3",
+    "discord.js": "^14.5.0",
     "dotenv": "^16.0.3",
     "emoji-regex": "^10.2.1",
     "got": "^11.8.5",

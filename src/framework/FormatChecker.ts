@@ -107,11 +107,12 @@ export class FormatChecker extends Base {
 
   public start(bot: Bot): void {
     this.bot = bot;
-    this.bot.client.on('message', this._messageHandler);
+    this.bot.client.on('messageCreate', this._messageHandler);
     this.bot.client.on('messageUpdate', this._messageUpdateHandler);
   }
 
   public stop(bot: Bot): void {
-    bot.client.off('message', this._messageHandler);
+    bot.client.off('messageCreate', this._messageHandler);
+    bot.client.off('messageUpdate', this._messageUpdateHandler);
   }
 }
