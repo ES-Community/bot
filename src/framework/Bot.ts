@@ -142,7 +142,9 @@ export class Bot {
     if (this._client) {
       throw new Error('Bot can only be started once');
     }
-    this._client = new Client();
+    this._client = new Client({
+      intents: ['Guilds', 'GuildMessages', 'MessageContent'],
+    });
     try {
       await Promise.all([
         this.client.login(this.token),

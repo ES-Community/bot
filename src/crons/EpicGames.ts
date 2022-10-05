@@ -1,4 +1,4 @@
-import { MessageEmbed } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
 import got from 'got';
 import { Logger } from 'pino';
 
@@ -36,26 +36,36 @@ export default new Cron({
     for (const game of gamesToNotify) {
       context.logger.info(`Found a new offered game (${game.title})`);
 
-      const message = new MessageEmbed({ title: game.title, url: game.link });
+      const message = new EmbedBuilder({ title: game.title, url: game.link });
       game.thumbnail && message.setThumbnail(game.thumbnail);
       game.banner && message.setImage(game.banner);
 
-      await channel.send(
-        message
-          .setDescription(game.description)
-          .addField(
-            'Début',
-            game.discountStartDate.toLocaleDateString('fr-FR', dateFmtOptions),
-            true,
-          )
-          .addField(
-            'Fin',
-            game.discountEndDate.toLocaleDateString('fr-FR', dateFmtOptions),
-            true,
-          )
-          .addField('Prix', `${game.originalPrice} → **Gratuit**`)
-          .setTimestamp(),
-      );
+      await channel.send({
+        embeds: [
+          message
+            .setDescription(game.description)
+            .addFields(
+              {
+                name: 'Début',
+                value: game.discountStartDate.toLocaleDateString(
+                  'fr-FR',
+                  dateFmtOptions,
+                ),
+                inline: true,
+              },
+              {
+                name: 'Fin',
+                value: game.discountEndDate.toLocaleDateString(
+                  'fr-FR',
+                  dateFmtOptions,
+                ),
+                inline: true,
+              },
+              { name: 'Prix', value: `${game.originalPrice} → **Gratuit**` },
+            )
+            .setTimestamp(),
+        ],
+      });
     }
   },
 });

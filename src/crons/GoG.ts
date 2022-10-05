@@ -1,4 +1,4 @@
-import { MessageEmbed } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
 import got from 'got';
 import { Logger } from 'pino';
 
@@ -36,22 +36,29 @@ export default new Cron({
 
     const channel = findTextChannelByName(context.client.channels, 'jeux');
 
-    await channel.send(
-      new MessageEmbed()
-        .setTitle(game.title)
-        .setURL(game.link)
-        .setDescription(game.description)
-        .setThumbnail(game.thumbnail)
-        .setImage(game.banner)
-        .addField(
-          'Fin',
-          game.discountEndDate.toLocaleDateString('fr-FR', dateFmtOptions),
-          true,
-        )
-        .addField('Prix', `${game.originalPrice}€ → **Gratuit**`)
-        .addField('Note', `⭐ ${game.rating}`)
-        .setTimestamp(),
-    );
+    await channel.send({
+      embeds: [
+        new EmbedBuilder()
+          .setTitle(game.title)
+          .setURL(game.link)
+          .setDescription(game.description)
+          .setThumbnail(game.thumbnail)
+          .setImage(game.banner)
+          .addFields(
+            {
+              name: 'Fin',
+              value: game.discountEndDate.toLocaleDateString(
+                'fr-FR',
+                dateFmtOptions,
+              ),
+              inline: true,
+            },
+            { name: 'Prix', value: `${game.originalPrice}€ → **Gratuit**` },
+            { name: 'Note', value: `⭐ ${game.rating}` },
+          )
+          .setTimestamp(),
+      ],
+    });
   },
 });
 
