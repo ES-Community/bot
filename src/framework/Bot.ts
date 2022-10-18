@@ -40,7 +40,7 @@ export class Bot {
   public constructor(options: BotOptions = {}) {
     this.token = options.token;
     this._client = null;
-    this.logger = pino(pino.transport({target: 'pino-pretty'}));
+    this.logger = pino(pino.transport({ target: 'pino-pretty' }));
 
     if (options.crons) {
       this.crons = this.loadDirectory(options.crons, 'crons', Cron);
