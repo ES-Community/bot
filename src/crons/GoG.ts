@@ -112,10 +112,12 @@ async function getOfferedGame(logger: Logger): Promise<Game | null> {
   const gameHTML = parse(gameBody);
   if (!gameHTML) return null;
 
-  const ldJSONNode = gameHTML.querySelector(
+  const ldJSON = gameHTML.querySelector(
     'script[type="application/ld+json"]',
   );
-  const gameJSON = JSON.parse(ldJSONNode?.innerHTML ?? '');
+  const ldJSONNode = ldJSON?.innerHTML ?? null;
+
+  const gameJSON = ldJSONNode ? JSON.parse(ldJSONNode) : null;
   if (!gameJSON) return null;
 
   const description =
