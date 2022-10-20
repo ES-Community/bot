@@ -124,6 +124,11 @@ export async function getOfferedGame(logger: Logger): Promise<Game | null> {
      */
     const [[banner]] = srcset.split(',').map(s => s.trim().split(' ').map(s => s.trim()))
 
+    logger.info(
+        { data: { title, description, banner } },
+        'Offered games response (compute form homepage only)',
+    );
+
     return {
       title: title.trim(),
       description: decode(description.trim()),
