@@ -4,6 +4,7 @@ import { Logger } from 'pino';
 
 import { Cron, findTextChannelByName } from '../framework';
 import { parse } from 'node-html-parser';
+import { decode } from 'html-entities';
 import { KeyValue } from '../database';
 
 const dateFmtOptions: Intl.DateTimeFormatOptions = {
@@ -36,29 +37,23 @@ export default new Cron({
 
     const channel = findTextChannelByName(context.client.channels, 'jeux');
 
-    await channel.send({
-      embeds: [
-        new EmbedBuilder()
-          .setTitle(game.title)
-          .setURL(game.link)
-          .setDescription(game.description)
-          .setThumbnail(game.thumbnail)
-          .setImage(game.banner)
-          .addFields(
-            {
-              name: 'Fin',
-              value: game.discountEndDate.toLocaleDateString(
-                'fr-FR',
-                dateFmtOptions,
-              ),
-              inline: true,
-            },
-            { name: 'Prix', value: `${game.originalPrice}€ → **Gratuit**` },
-            { name: 'Note', value: `⭐ ${game.rating}` },
-          )
-          .setTimestamp(),
-      ],
-    });
+    const embed = new EmbedBuilder()
+        .setTitle(game.title)
+        .setURL(game.link)
+        .setDescription(game.description)
+        .setImage(game.banner)
+        .addFields({
+          name: 'Fin',
+          value: game.discountEndDate.toLocaleDateString('fr-FR', dateFmtOptions),
+          inline: true,
+        })
+        .setTimestamp();
+
+    if (game.thumbnail) embed.setThumbnail(game.thumbnail);
+    if (game.originalPrice) embed.addFields({ name: 'Prix', value: `${game.originalPrice}€ → **Gratuit**` });
+    if (game.rating) embed.addFields({ name: 'Note', value: `⭐ ${game.rating}` });
+
+    await channel.send({embeds: [embed]});
   },
 });
 
@@ -69,11 +64,11 @@ interface Game {
   title: string;
   description: string;
   link: string;
-  thumbnail: string;
+  thumbnail?: string;
   banner: string;
-  originalPrice: string;
+  originalPrice?: string;
   discountEndDate: Date;
-  rating: string;
+  rating?: string;
 }
 
 /**
@@ -81,7 +76,7 @@ interface Game {
  * were offered between the previous and current cron execution, returns them.
  * @param logger
  */
-async function getOfferedGame(logger: Logger): Promise<Game | null> {
+export async function getOfferedGame(logger: Logger): Promise<Game | null> {
   const GOG_GOT_OPTIONS = {
     headers: {
       'Accept-Language':
@@ -89,7 +84,7 @@ async function getOfferedGame(logger: Logger): Promise<Game | null> {
     },
   };
   const { body: homeBody } = await got<string>(
-    'https://www.gog.com/#giveaway',
+    'https://www.gog.com/fr#giveaway', // ensure get fr info or it's geolocalized
     GOG_GOT_OPTIONS,
   );
 
@@ -116,7 +111,27 @@ async function getOfferedGame(logger: Logger): Promise<Game | null> {
   const ldJSONNode = ldJSON?.innerHTML ?? null;
 
   const gameJSON = ldJSONNode ? JSON.parse(ldJSONNode) : null;
-  if (!gameJSON) return null;
+  if (!gameJSON) {
+    // the gift link redirect to incorrect page
+    const title = SEOLink.querySelector('.giveaway-banner__title')?.textContent ?? SEOLink.getAttribute('giveaway-banner-id') ?? '';
+    const description = SEOLink.querySelector('.giveaway-banner__description')?.textContent ?? '';
+    const srcset = SEOLink.querySelector('.giveaway-banner__image source[type="image/png"]')?.getAttribute('srcset') ?? '';
+    /*
+     * srcset="
+     * //images-1.gog-statics.com/c26a3d08d01005d92fbc4b658ab226fc5de374d3746f313a01c83e615cc066c1_giveaway_banner_logo_502_2x.png 2x,
+     * //images-1.gog-statics.com/c26a3d08d01005d92fbc4b658ab226fc5de374d3746f313a01c83e615cc066c1_giveaway_banner_logo_502.png 1x
+     * "
+     */
+    const [[banner]] = srcset.split(',').map(s => s.trim().split(' ').map(s => s.trim()))
+
+    return {
+      title: title.trim(),
+      description: decode(description.trim()),
+      link: 'https://www.gog.com/#giveaway',
+      banner: `https:${banner}`,
+      discountEndDate: new Date(endTimestamp),
+    };
+  }
 
   const description =
     gameHTML.querySelector('.content-summary-item__description')?.innerText ??
@@ -131,15 +146,17 @@ async function getOfferedGame(logger: Logger): Promise<Game | null> {
     'Offered games response',
   );
 
+  const rating = gameJSON.aggregateRating?.ratingValue ?? '?';
+
   return {
-    title: gameJSON.name,
-    description,
-    // link: 'https://www.gog.com/#giveaway',
+    title: gameJSON.name.trim(),
+    description: decode(description),
+    // link: 'https://www.gog.com/fr#giveaway',
     link: gameJSON.offers.url,
     thumbnail: gameJSON.image,
     banner,
     originalPrice: gameJSON.offers.price,
     discountEndDate: new Date(endTimestamp),
-    rating: `${gameJSON.aggregateRating.ratingValue} / 5`,
+    rating: `${rating} / 5`,
   };
 }
