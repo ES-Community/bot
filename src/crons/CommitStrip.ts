@@ -1,9 +1,12 @@
-import { EmbedBuilder } from 'discord.js';
+import {EmbedBuilder} from 'discord.js';
 import got from 'got';
-import { decode } from 'html-entities';
+import {decode} from 'html-entities';
 
-import { Cron, findTextChannelByName } from '../framework';
-import { KeyValue } from '../database';
+import {Cron, findTextChannelByName} from '../framework';
+import {KeyValue} from '../database';
+import {CounterFailed, CRON_ERROR_CODE} from "#src/crons/CounterFailed";
+
+const COUNTER = new CounterFailed("CommitStrip");
 
 export default new Cron({
   enabled: true,
@@ -12,29 +15,44 @@ export default new Cron({
     'Vérifie toutes les 30 minutes si un nouveau CommitStrip est sorti et le poste dans #gif',
   schedule: '5,35 * * * *',
   async handle(context) {
-    const strip = await getLastCommitStrip();
+    try {
+      const strip = await getLastCommitStrip();
+      // vérifie le strip trouvé avec la dernière entrée
+      const lastStrip = await KeyValue.get<number>('Last-Cron-CommitStrip');
+      const stripStoreIdentity = strip?.id ?? null;
+      if (lastStrip === stripStoreIdentity) return; // skip si identique
 
-    // vérifie le strip trouvé avec la dernière entrée
-    const lastStrip = await KeyValue.get<number>('Last-Cron-CommitStrip');
-    const stripStoreIdentity = strip?.id ?? null;
-    if (lastStrip === stripStoreIdentity) return; // skip si identique
+      await KeyValue.set('Last-Cron-CommitStrip', stripStoreIdentity); // met à jour sinon
 
-    await KeyValue.set('Last-Cron-CommitStrip', stripStoreIdentity); // met à jour sinon
+      if (!strip) return; // skip si pas de strip
 
-    if (!strip) return; // skip si pas de strip
+      context.logger.info(`Found a new CommitStrip (${strip.id})`);
 
-    context.logger.info(`Found a new CommitStrip (${strip.id})`);
+      const channel = findTextChannelByName(context.client.channels, 'gif');
 
-    const channel = findTextChannelByName(context.client.channels, 'gif');
+      await channel.send({
+        embeds: [
+          new EmbedBuilder()
+              .setTitle(strip.title)
+              .setURL(strip.link)
+              .setImage(strip.imageUrl),
+        ],
+      });
 
-    await channel.send({
-      embeds: [
-        new EmbedBuilder()
-          .setTitle(strip.title)
-          .setURL(strip.link)
-          .setImage(strip.imageUrl),
-      ],
-    });
+      await COUNTER.resetFailed();
+    } catch (e) {
+      await COUNTER.incrementFailed();
+      const counterCode = await COUNTER.getErrorCode();
+
+      if (counterCode === CRON_ERROR_CODE.NEXT_MESSAGE_IGNORE) {
+        await COUNTER.sendMessageError(context.client.channels, e);
+        await COUNTER.sendMessageIgnore(context.client.channels);
+      }
+
+      if (counterCode !== CRON_ERROR_CODE.MESSAGE_IGNORE) {
+        await COUNTER.sendMessageError(context.client.channels, e);
+      }
+    }
   },
 });
 
