@@ -38,22 +38,27 @@ export default new Cron({
     const channel = findTextChannelByName(context.client.channels, 'jeux');
 
     const embed = new EmbedBuilder()
-        .setTitle(game.title)
-        .setURL(game.link)
-        .setDescription(game.description)
-        .setImage(game.banner)
-        .addFields({
-          name: 'Fin',
-          value: game.discountEndDate.toLocaleDateString('fr-FR', dateFmtOptions),
-          inline: true,
-        })
-        .setTimestamp();
+      .setTitle(game.title)
+      .setURL(game.link)
+      .setDescription(game.description)
+      .setImage(game.banner)
+      .addFields({
+        name: 'Fin',
+        value: game.discountEndDate.toLocaleDateString('fr-FR', dateFmtOptions),
+        inline: true,
+      })
+      .setTimestamp();
 
     if (game.thumbnail) embed.setThumbnail(game.thumbnail);
-    if (game.originalPrice) embed.addFields({ name: 'Prix', value: `${game.originalPrice}€ → **Gratuit**` });
-    if (game.rating) embed.addFields({ name: 'Note', value: `⭐ ${game.rating}` });
+    if (game.originalPrice)
+      embed.addFields({
+        name: 'Prix',
+        value: `${game.originalPrice}€ → **Gratuit**`,
+      });
+    if (game.rating)
+      embed.addFields({ name: 'Note', value: `⭐ ${game.rating}` });
 
-    await channel.send({embeds: [embed]});
+    await channel.send({ embeds: [embed] });
   },
 });
 
@@ -113,20 +118,32 @@ export async function getOfferedGame(logger: Logger): Promise<Game | null> {
   const gameJSON = ldJSONNode ? JSON.parse(ldJSONNode) : null;
   if (!gameJSON) {
     // the gift link redirect to incorrect page
-    const title = SEOLink.querySelector('.giveaway-banner__title')?.textContent ?? SEOLink.getAttribute('giveaway-banner-id') ?? '';
-    const description = SEOLink.querySelector('.giveaway-banner__description')?.textContent ?? '';
-    const srcset = SEOLink.querySelector('.giveaway-banner__image source[type="image/png"]')?.getAttribute('srcset') ?? '';
+    const title =
+      SEOLink.querySelector('.giveaway-banner__title')?.textContent ??
+      SEOLink.getAttribute('giveaway-banner-id') ??
+      '';
+    const description =
+      SEOLink.querySelector('.giveaway-banner__description')?.textContent ?? '';
+    const srcset =
+      SEOLink.querySelector(
+        '.giveaway-banner__image source[type="image/png"]',
+      )?.getAttribute('srcset') ?? '';
     /*
      * srcset="
      * //images-1.gog-statics.com/c26a3d08d01005d92fbc4b658ab226fc5de374d3746f313a01c83e615cc066c1_giveaway_banner_logo_502_2x.png 2x,
      * //images-1.gog-statics.com/c26a3d08d01005d92fbc4b658ab226fc5de374d3746f313a01c83e615cc066c1_giveaway_banner_logo_502.png 1x
      * "
      */
-    const [[banner]] = srcset.split(',').map(s => s.trim().split(' ').map(s => s.trim()))
+    const [[banner]] = srcset.split(',').map((s) =>
+      s
+        .trim()
+        .split(' ')
+        .map((s) => s.trim()),
+    );
 
     logger.info(
-        { data: { title, description, banner } },
-        'Offered games response (compute form homepage only)',
+      { data: { title, description, banner } },
+      'Offered games response (compute form homepage only)',
     );
 
     return {
