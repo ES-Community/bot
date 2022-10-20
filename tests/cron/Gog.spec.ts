@@ -1,5 +1,5 @@
-import { getOfferedGame } from '#src/crons/GoG';
-import { testLogger } from '../utils';
+import {getOfferedGame} from '#src/crons/GoG';
+import {testLogger} from '../utils';
 
 
 test('getOfferedGames', async () => {
