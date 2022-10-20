@@ -225,7 +225,9 @@ export async function getOfferedGames(
 
   // Keep only the games that were offered in the last day.
   const games = (catalog.elements ?? []).filter((game) => {
-    const rule = game.price.lineOffers[0].appliedRules[0];
+    const rule = game.price?.lineOffers?.[0]?.appliedRules?.[0];
+    if (!rule) return false;
+
     const [startDate, endDate] = [
       new Date(rule.startDate),
       new Date(rule.endDate),
