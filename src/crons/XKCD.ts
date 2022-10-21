@@ -5,15 +5,6 @@ import { decode } from 'html-entities';
 import { KeyValue } from '../database';
 import { EmbedBuilder } from 'discord.js';
 
-const DATETIME_FMT: Intl.DateTimeFormatOptions = {
-  timeZone: 'Europe/Paris',
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-  hour: 'numeric',
-  minute: 'numeric',
-};
-
 export default new Cron({
   enabled: true,
   name: 'XKCD',
