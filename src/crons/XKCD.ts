@@ -19,8 +19,7 @@ export default new Cron({
   name: 'XKCD',
   description:
     'Vérifie toutes les 30 minutes si un nouveau strip de XKCD est sortis',
-  // schedule: '5,35 * * * *',
-  schedule: '* * * * *',
+  schedule: '5,35 * * * *',
   async handle(context) {
     const strip = await getLastXKCDStrip();
 
