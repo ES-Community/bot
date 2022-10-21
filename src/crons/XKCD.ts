@@ -19,8 +19,8 @@ export default new Cron({
   name: 'XKCD',
   description:
     'Vérifie toutes les 30 minutes si un nouveau strip de XKCD est sortis',
-  schedule: '5,35 * * * *',
-  // schedule: '* * * * *',
+  // schedule: '5,35 * * * *',
+  schedule: '* * * * *',
   async handle(context) {
     const strip = await getLastXKCDStrip();
 
@@ -42,13 +42,9 @@ export default new Cron({
         new EmbedBuilder()
           .setURL(strip.link)
           .setTitle(strip.title)
-          .setDescription(strip.description)
-          .addFields({
-            name: 'Publication',
-            value: strip.date.toLocaleDateString('fr-FR', DATETIME_FMT),
-            inline: true,
-          })
-          .setImage(strip.imageUrl),
+          .setImage(strip.imageUrl)
+          .setTimestamp(strip.date)
+          .setFooter({ text: strip.description }),
       ],
     });
   },
