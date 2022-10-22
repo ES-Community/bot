@@ -17,8 +17,8 @@ export enum SearchFlag {
   Contains = 0b11,
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const KeyValueStore = <U = never>() => DB<U>('kv');
+// eslint-disable-next-line @typescript-eslint/ban-types
+export const KeyValueStore = <U extends {} = never>() => DB<U>('kv');
 
 export const KeyValue = {
   size(): Promise<number> {
