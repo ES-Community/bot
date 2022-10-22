@@ -1,11 +1,11 @@
-FROM node:16.17.0-bullseye-slim as builder
+FROM node:18.11.0-bullseye-slim as builder
 
 WORKDIR /app
 
 COPY . .
 RUN npm ci && npm run build
 
-FROM node:16.17.0-bullseye-slim as prod
+FROM node:18.11.0-bullseye-slim as prod
 
 ENV NODE_ENV production
 
