@@ -4,7 +4,7 @@
 
 ### Prérequis
 
-- Node.js v16
+- Node.js v18
 - npm v8
 - Un bot Discord installé sur une copie du serveur ES Community.
   - Création et gestion de bots: https://discord.com/developers/applications/ -> App -> Bot
