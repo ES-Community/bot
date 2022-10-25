@@ -1,6 +1,7 @@
-import { getOfferedGames } from '#src/crons/EpicGames';
+import { test, expect } from 'vitest';
 
-import { testLogger } from '../utils';
+import { testLogger } from '../utils.js';
+import { getOfferedGames } from '../../src/crons/EpicGames.js';
 
 const oneDay = 1000 * 60 * 60 * 24;
 

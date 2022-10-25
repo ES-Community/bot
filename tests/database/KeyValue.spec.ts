@@ -1,6 +1,23 @@
+import fs from 'node:fs/promises';
+
 import type { Knex } from 'knex';
-import fs from 'fs/promises';
-import { config, DB, KeyValue, KeyValueStore, SearchFlag } from '#src/database';
+import {
+  describe,
+  test,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  afterEach,
+} from 'vitest';
+
+import {
+  config,
+  DB,
+  KeyValue,
+  KeyValueStore,
+  SearchFlag,
+} from '../../src/database/index.js';
 
 beforeAll(async () => {
   await fs.rm((config.connection as Knex.Sqlite3ConnectionConfig).filename, {

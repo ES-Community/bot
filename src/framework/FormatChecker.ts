@@ -1,9 +1,11 @@
+import { randomUUID } from 'node:crypto';
+
 import { Message, PartialMessage } from 'discord.js';
-import { randomUUID } from 'crypto';
 import { Logger } from 'pino';
-import { Base, BaseConfig } from './Base';
-import { Bot } from './Bot';
-import { findTextChannelByName, isTextChannel } from './helpers';
+
+import { Base, BaseConfig } from './Base.js';
+import { Bot } from './Bot.js';
+import { findTextChannelByName, isTextChannel } from './helpers.js';
 
 type FunctionChecker = (message: Message, logger: Logger) => boolean;
 

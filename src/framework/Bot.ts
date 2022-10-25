@@ -1,13 +1,19 @@
-import { once } from 'events';
-import fs from 'fs';
-import path from 'path';
+import { once } from 'node:events';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { Client } from 'discord.js';
-import pino from 'pino';
+import { pino, Logger, transport } from 'pino';
 
-import { Cron } from './Cron';
-import { Base, BaseConfig } from './Base';
-import { FormatChecker } from './FormatChecker';
+import { Cron } from './Cron.js';
+import { Base, BaseConfig } from './Base.js';
+import { FormatChecker } from './FormatChecker.js';
+
+function toPath(pathOrUrl: string | URL): string {
+  if (typeof pathOrUrl === 'string') return pathOrUrl;
+  return fileURLToPath(pathOrUrl);
+}
 
 export interface BotOptions {
   /**
@@ -18,11 +24,11 @@ export interface BotOptions {
   /**
    * Directory that contains the `Cron` definitions.
    */
-  crons?: string;
+  crons?: string | URL;
   /**
    * Directory that contains the `FormatChecker` definitions.
    */
-  formatCheckers?: string;
+  formatCheckers?: string | URL;
 }
 
 type Constructor<T extends Base, U extends BaseConfig> = {
@@ -30,38 +36,46 @@ type Constructor<T extends Base, U extends BaseConfig> = {
 };
 
 export class Bot {
+  private readonly options: BotOptions;
   private readonly token?: string;
   private _client: Client | null;
   private crons: Cron[] = [];
   private formatCheckers: FormatChecker[] = [];
 
-  public readonly logger: pino.Logger;
+  public readonly logger: Logger;
 
   public constructor(options: BotOptions = {}) {
+    this.options = options;
     this.token = options.token;
     this._client = null;
-    this.logger = pino(pino.transport({ target: 'pino-pretty' }));
+    this.logger = pino(transport({ target: 'pino-pretty' }));
+  }
 
-    if (options.crons) {
-      this.crons = this.loadDirectory(options.crons, 'crons', Cron);
+  private async loadDirectories() {
+    if (this.options.crons) {
+      this.crons = await this.loadDirectory(
+        toPath(this.options.crons),
+        'crons',
+        Cron,
+      );
     }
-    if (options.formatCheckers) {
-      this.formatCheckers = this.loadDirectory(
-        options.formatCheckers,
+    if (this.options.formatCheckers) {
+      this.formatCheckers = await this.loadDirectory(
+        toPath(this.options.formatCheckers),
         'format-checkers',
         FormatChecker,
       );
     }
   }
 
-  private loadDirectory<T extends Base, U extends BaseConfig>(
+  private async loadDirectory<T extends Base, U extends BaseConfig>(
     directory: string,
     name: string,
     constructor: Constructor<T, U>,
-  ): T[] {
+  ): Promise<T[]> {
     let list: string[];
     try {
-      list = fs.readdirSync(directory);
+      list = await fs.readdir(directory);
     } catch (err) {
       if (err.code === 'ENOENT') {
         throw new Error(
@@ -71,21 +85,16 @@ export class Bot {
       throw err;
     }
 
-    const allExports = list
+    const allExportsPromises = list
       .filter((file) => {
         const ext = path.extname(file);
         // Ignore non-source files (such as ".map")
         return ['.js', '.ts'].includes(ext);
       })
-      .map((file) => {
+      .map(async (file) => {
         const filePath = path.join(directory, file);
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const value = require(filePath);
-        if (
-          !value ||
-          !value.default ||
-          !(value.default instanceof constructor)
-        ) {
+        const value = await import(pathToFileURL(filePath).href);
+        if (!value.default || !(value.default instanceof constructor)) {
           throw new Error(
             `${filePath} must export an instance of ${constructor.name}`,
           );
@@ -93,6 +102,7 @@ export class Bot {
         return value.default as T;
       });
 
+    const allExports = await Promise.all(allExportsPromises);
     const enabledExports = allExports.filter((element) => element.enabled);
 
     if (enabledExports.length === allExports.length) {
@@ -142,6 +152,7 @@ export class Bot {
     if (this._client) {
       throw new Error('Bot can only be started once');
     }
+    await this.loadDirectories();
     this._client = new Client({
       intents: ['Guilds', 'GuildMessages', 'MessageContent'],
     });
