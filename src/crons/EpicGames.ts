@@ -206,7 +206,7 @@ export async function getOfferedGames(
         variables: {
           country: 'FR',
           locale: 'fr',
-          count: 1000,
+          count: 20,
         },
       },
       responseType: 'json',
