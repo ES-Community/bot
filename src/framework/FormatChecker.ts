@@ -72,7 +72,7 @@ export class FormatChecker extends Base {
         ? [
             `Voici ${
               plural ? 'des' : 'un'
-            } example${pluralSuffix} de message${pluralSuffix} correctement formaté${pluralSuffix} :`,
+            } exemple${pluralSuffix} de message${pluralSuffix} correctement formaté${pluralSuffix} :`,
             ...this.examples.map((example) => `\`\`\`\n${example}\`\`\``),
           ]
         : []),
