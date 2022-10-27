@@ -1,14 +1,12 @@
 // Must be imported first so it runs before other files.
-import './setup-env';
+import './setup-env.js';
 
-import path from 'path';
-
-import { Bot } from './framework';
+import { Bot } from './framework/index.js';
 
 const bot = new Bot({
   token: process.env.DISCORD_TOKEN,
-  crons: path.join(__dirname, 'crons'),
-  formatCheckers: path.join(__dirname, 'format-checkers'),
+  crons: new URL('./crons', import.meta.url),
+  formatCheckers: new URL('./format-checkers', import.meta.url),
 });
 
 bot.start().then(() => {

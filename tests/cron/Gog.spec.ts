@@ -1,5 +1,7 @@
-import { getOfferedGame } from '#src/crons/GoG';
-import { testLogger } from '../utils';
+import { test, expect } from 'vitest';
+
+import { testLogger } from '../utils.js';
+import { getOfferedGame } from '../../src/crons/GoG.js';
 
 test('getOfferedGames', async () => {
   const game = await getOfferedGame(testLogger);

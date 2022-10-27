@@ -1,4 +1,4 @@
-import DB from './db';
+import DB from './db.js';
 
 type JSONScalar = boolean | number | string | null;
 type JSONTypes = JSONScalar | JSONObject | JSONArray;

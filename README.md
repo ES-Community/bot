@@ -57,7 +57,9 @@ npm run test-only
 npm run test-coverage
 ```
 
-Le framework de test [Jest](https://jestjs.io/) est utilisé pour exécuter les tests. Ceux-ci doivent être écrits en TypeScript dans le dossier `tests`. Essayez de conserver la même structure de dossiers que dans `src` pour organiser les tests.
+Le framework de test [Vitest](https://vitest.dev/) est utilisé pour exécuter les tests.
+Ceux-ci doivent être écrits en TypeScript dans le dossier `tests`.
+Conservez la même structure de dossiers que dans `src` pour organiser les tests.
 
 #### Lint
 
@@ -77,7 +79,8 @@ Nous utilisons [ESLint](https://eslint.org/) ainsi que [typescript-eslint](https
 npm run check-types
 ```
 
-Cette commande exécute le compilateur TypeScript avec l'option `--noEmit`. Elle permet de valider les types de l'entier du projet, y compris sur les fichiers qui ne sont pas testés avec Jest.
+Cette commande exécute le compilateur TypeScript avec l'option `--noEmit`.
+Elle permet de valider les types de l'entier du projet.
 
 ### Écriture de fonctionnalités
 
@@ -124,8 +127,6 @@ Si besoin de stocker des settings basique, la table `kv` est disponible avec l'a
 Les clés doivent être des `string`, les valeurs peuvent être n'importe quoi, sachant que ce sera sérialisé / désérialisé de JSON (donc pas de données circulaires, pas de fonctions).
 
 ```typescript
-import { KeyValue } from '#src/database/';
-
 await KeyValue.set(
   'MyCron-LastRunResult',
   'https://github.com/ES-Community/bot/issues/17',

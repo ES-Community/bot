@@ -2,8 +2,8 @@ import { EmbedBuilder } from 'discord.js';
 import got from 'got';
 import { Logger } from 'pino';
 
-import { Cron, findTextChannelByName } from '../framework';
-import { KeyValue } from '../database';
+import { Cron, findTextChannelByName } from '../framework/index.js';
+import { KeyValue } from '../database/index.js';
 
 const dateFmtOptions: Intl.DateTimeFormatOptions = {
   timeZone: 'Europe/Paris',
@@ -206,7 +206,7 @@ export async function getOfferedGames(
         variables: {
           country: 'FR',
           locale: 'fr',
-          count: 1000,
+          count: 20,
         },
       },
       responseType: 'json',

@@ -1,4 +1,4 @@
-import { FormatChecker } from '../framework';
+import { FormatChecker } from '../framework/index.js';
 import createRegExp from 'emoji-regex';
 
 const unicodeEmojiRegexp = createRegExp().source;

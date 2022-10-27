@@ -1,4 +1,6 @@
-import { getLastXKCDStrip } from '#src/crons/XKCD';
+import { test, expect } from 'vitest';
+
+import { getLastXKCDStrip } from '../../src/crons/XKCD.js';
 
 test('getLastXKCDStrip', async () => {
   const strip = await getLastXKCDStrip();

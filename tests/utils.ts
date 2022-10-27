@@ -1,3 +1,3 @@
 import pino from 'pino';
 
-export const testLogger = pino({ enabled: false });
+export const testLogger = pino.pino({ enabled: false });

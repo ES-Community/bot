@@ -1,8 +1,8 @@
-import { Cron, findTextChannelByName } from '../framework';
+import { Cron, findTextChannelByName } from '../framework/index.js';
 import got from 'got';
 import { parse } from 'node-html-parser';
 import { decode } from 'html-entities';
-import { KeyValue } from '../database';
+import { KeyValue } from '../database/index.js';
 import { EmbedBuilder } from 'discord.js';
 
 export default new Cron({
