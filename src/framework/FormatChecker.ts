@@ -42,7 +42,8 @@ export class FormatChecker extends Base {
     if (this.bot === undefined) return;
     if (
       !isTextChannel(message.channel) ||
-      message.channel.name !== this.channelName
+      message.channel.name !== this.channelName ||
+      message.hasThread
     )
       return;
 
