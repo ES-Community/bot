@@ -1,10 +1,9 @@
 import { Cron, findTextChannelByName } from '../framework/index.js';
 import got from 'got';
 import { parse } from 'node-html-parser';
-import { decode, encode } from 'html-entities';
+import { decode } from 'html-entities';
 import { KeyValue } from '../database/index.js';
-import { EmbedBuilder } from 'discord.js';
-import { NodeHtmlMarkdown, NodeHtmlMarkdownOptions } from 'node-html-markdown';
+import { NodeHtmlMarkdown } from 'node-html-markdown';
 
 const nhm = new NodeHtmlMarkdown({
   bulletMarker: '-',
@@ -42,12 +41,13 @@ export default new Cron({
           ? completeContent.slice(0, indexOfCommit)
           : completeContent;
 
-      let [start, end] = [0, 2000]; // fence message by 2000 char chunks
-      while (true) {
+      // fence message by 2000 char chunks
+      for (
+        let start = 0, end = 2000;
+        start < content.length;
+        start += 2000, end += 2000
+      ) {
         await channel.send({ content: content.slice(start, end) });
-        if (end >= content.length) break;
-        start += 2000;
-        end += 2000;
       }
 
       await KeyValue.set('Last-Cron-Node.js', release.id); // update id in db
