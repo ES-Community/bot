@@ -4,6 +4,13 @@ import { parse } from 'node-html-parser';
 import { decode, encode } from 'html-entities';
 import { KeyValue } from '../database/index.js';
 import { EmbedBuilder } from 'discord.js';
+import { NodeHtmlMarkdown, NodeHtmlMarkdownOptions } from 'node-html-markdown';
+
+const nhm = new NodeHtmlMarkdown({
+  bulletMarker: '-',
+  useLinkReferenceDefinitions: false,
+  useInlineLinks: true,
+});
 
 export default new Cron({
   enabled: true,
@@ -11,7 +18,7 @@ export default new Cron({
   description:
     'Vérifie toutes les 30 minutes si une nouvelle release de Node.js est sortie',
   // schedule: '5,35 * * * *',
-  schedule: '* * * * *',
+  schedule: '5,35 * * * *',
   async handle(context) {
     // retrieve last release id from db
     const lastRelease = (await KeyValue.get<string>('Last-Cron-Node.js')) ?? '';
@@ -19,29 +26,29 @@ export default new Cron({
     const entries = await getLastNodeReleases(lastRelease);
 
     // if no releases return
-    const lastEntry = entries.at(-1);
-    if (!lastEntry) return;
+    if (entries.length === 0) return;
 
     context.logger.info(`Found new Node.js releases`, entries);
 
     const channel = findTextChannelByName(context.client.channels, 'nodejs');
 
     for (const release of entries) {
-      await channel.send({
-        content: `Release ${release.title}\n${release.link}`,
-      });
-      // await channel.send({
-      //   embeds: [
-      //     new EmbedBuilder()
-      //       .setURL(release.link)
-      //       .setTitle(`Release ${release.title}`)
-      //       .setDescription(
-      //         `<html><body>${release.content.slice(0, 4000)}</body></html>`,
-      //       )
-      //       .setImage(release.author.image)
-      //       .setTimestamp(release.date),
-      //   ],
-      // });
+      const completeContent = `# Release ${release.title}\n\n${
+        release.link
+      }\n\n${nhm.translate(release.content)}`;
+      const indexOfCommit = completeContent.indexOf('\n# Commits\n');
+      const content =
+        indexOfCommit >= 0
+          ? completeContent.slice(0, indexOfCommit)
+          : completeContent;
+
+      let [start, end] = [0, 2000]; // fence message by 2000 char chunks
+      while (true) {
+        await channel.send({ content: content.slice(start, end) });
+        if (end >= content.length) break;
+        start += 2000;
+        end += 2000;
+      }
 
       await KeyValue.set('Last-Cron-Node.js', release.id); // update id in db
     }
@@ -67,27 +74,80 @@ export async function getLastNodeReleases(
   const atom = parse(body);
 
   let shouldSkip = false;
-  return atom
-    .querySelectorAll('entry')
-    .map((entry) => ({
-      id: entry.querySelector('id')?.textContent ?? '',
-      link: entry.querySelector('link')?.getAttribute('href') ?? '',
-      title: entry.querySelector('title')?.textContent ?? '',
-      content: decode(entry.querySelector('content[type="html"]')?.textContent),
-      author: {
-        name: entry.querySelector('author name')?.textContent ?? '',
-        image:
-          entry.querySelector('media\\:thumbnail')?.getAttribute('url') ?? '',
-      },
-      date: new Date(entry.querySelector('updated')?.textContent ?? new Date()),
-    }))
-    .sort((a, b) => b.date.getTime() - a.date.getTime())
-    .filter((entry) => {
-      if (entry.id === skipAfterId) {
-        shouldSkip = true;
-      }
+  return (
+    atom
+      .querySelectorAll('entry')
+      .map((entry) => {
+        const originContent = decode(
+          entry.querySelector('content[type="html"]')?.textContent,
+        );
+        const document = parse(originContent);
 
-      return !shouldSkip;
-    })
-    .reverse();
+        {
+          // clean up commit and PR links
+          const links = document.querySelectorAll(
+            'a[href*="github.com/nodejs/node/commit"], a[href*="github.com/nodejs/node/pull"]',
+          );
+          for (const link of links) {
+            link.insertAdjacentHTML('beforebegin', link.innerHTML);
+            link.remove();
+          }
+
+          // ensure code blocks is rendered as codeblock
+          const codes = document.querySelectorAll('div.highlight');
+          for (const code of codes) {
+            const langCls =
+              code.classList.value.find((cls) =>
+                cls.startsWith('highlight-source-'),
+              ) ?? '';
+            const lang = langCls.replace('highlight-source-', '');
+            const markdownBlock = `<pre class="language-${lang}"><code>${code.getAttribute(
+              'data-snippet-clipboard-copy-content',
+            )}</code></pre>`;
+            code.insertAdjacentHTML('beforebegin', markdownBlock);
+            code.remove();
+          }
+
+          // up titles (start to h3), so it's still compatibles with discord
+          for (const title of document.querySelectorAll('h3'))
+            title.tagName = 'h1';
+          for (const title of document.querySelectorAll('h4'))
+            title.tagName = 'h2';
+          for (const title of document.querySelectorAll('h5'))
+            title.tagName = 'h3';
+          for (const title of document.querySelectorAll('h6'))
+            title.tagName = 'h3';
+        }
+
+        const content = document.innerHTML;
+
+        return {
+          id: entry.querySelector('id')?.textContent ?? '',
+          link: entry.querySelector('link')?.getAttribute('href') ?? '',
+          title: entry.querySelector('title')?.textContent ?? '',
+          content,
+          author: {
+            name: entry.querySelector('author name')?.textContent ?? '',
+            image:
+              entry.querySelector('media\\:thumbnail')?.getAttribute('url') ??
+              '',
+          },
+          date: new Date(
+            entry.querySelector('updated')?.textContent ?? new Date(),
+          ),
+        };
+      })
+      // recent to old (title is a better attribute than date, because it's the updated field)
+      .sort((a, b) => b.title.localeCompare(a.title))
+      // remove older items
+      .filter((entry) => {
+        if (entry.id === skipAfterId) {
+          shouldSkip = true;
+        }
+
+        return !shouldSkip;
+      })
+      // old to recent
+      .reverse()
+  );
 }
