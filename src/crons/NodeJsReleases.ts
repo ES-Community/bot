@@ -1,7 +1,7 @@
 import { Cron, findTextChannelByName } from '../framework/index.js';
 import got from 'got';
 import { parse } from 'node-html-parser';
-import { decode } from 'html-entities';
+import { decode, encode } from 'html-entities';
 import { KeyValue } from '../database/index.js';
 import { NodeHtmlMarkdown } from 'node-html-markdown';
 
@@ -16,8 +16,8 @@ export default new Cron({
   name: 'Node.js Releases',
   description:
     'Vérifie toutes les 30 minutes si une nouvelle release de Node.js est sortie',
-  // schedule: '5,35 * * * *',
   schedule: '5,35 * * * *',
+  // schedule: '* * * * *',
   async handle(context) {
     // retrieve last release id from db
     const lastRelease = (await KeyValue.get<string>('Last-Cron-Node.js')) ?? '';
@@ -85,12 +85,19 @@ export async function getLastNodeReleases(
 
         {
           // clean up commit and PR links
-          const links = document.querySelectorAll(
+          const internalLinks = document.querySelectorAll(
             'a[href*="github.com/nodejs/node/commit"], a[href*="github.com/nodejs/node/pull"]',
           );
-          for (const link of links) {
+          for (const link of internalLinks) {
             link.insertAdjacentHTML('beforebegin', link.innerHTML);
             link.remove();
+          }
+
+          // remove embed on other links
+          const externalLinks = document.querySelectorAll('a');
+          for (const link of externalLinks) {
+            link.insertAdjacentHTML('beforebegin', encode('<'));
+            link.insertAdjacentHTML('afterend', encode('>'));
           }
 
           // ensure code blocks is rendered as codeblock
