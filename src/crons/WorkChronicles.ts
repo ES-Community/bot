@@ -61,10 +61,6 @@ interface WorkChronicle {
    */
   id: number;
   /**
-   * Post date.
-   */
-  date: Date;
-  /**
    * Direct link to the post.
    */
   link: string;
@@ -94,7 +90,6 @@ export async function getLastChronicle(): Promise<WorkChronicle | null> {
   }
 
   const [chronicle] = posts;
-  const chronicleDate = new Date(chronicle.date_gmt + '.000Z');
 
   const chronicleImageUrlReg = /src="([^"]+)"/;
   const urlMatch = chronicleImageUrlReg.exec(chronicle.content.rendered);
@@ -104,7 +99,6 @@ export async function getLastChronicle(): Promise<WorkChronicle | null> {
 
   return {
     id: chronicle.id,
-    date: chronicleDate,
     link: chronicle.link,
     title: chronicle.title.rendered,
     imageUrl: urlMatch[1],
