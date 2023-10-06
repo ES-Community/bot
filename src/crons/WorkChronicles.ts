@@ -50,6 +50,9 @@ interface WordPressPost {
   content: {
     rendered: string;
   };
+  yoast_head_json?: {
+    og_image: Array<{ url: string }>;
+  };
 }
 
 /**
@@ -91,16 +94,20 @@ export async function getLastChronicle(): Promise<WorkChronicle | null> {
 
   const [chronicle] = posts;
 
-  const chronicleImageUrlReg = /src="([^"]+)"/;
-  const urlMatch = chronicleImageUrlReg.exec(chronicle.content.rendered);
-  if (!urlMatch) {
-    return null;
+  let imageUrl = chronicle.yoast_head_json?.og_image.at(0)?.url;
+  if (!imageUrl) {
+    const chronicleImageUrlReg = /src="([^"]+)"/;
+    const urlMatch = chronicleImageUrlReg.exec(chronicle.content.rendered);
+    if (!urlMatch) {
+      return null;
+    }
+    imageUrl = urlMatch[1];
   }
 
   return {
     id: chronicle.id,
     link: chronicle.link,
     title: chronicle.title.rendered,
-    imageUrl: urlMatch[1],
+    imageUrl,
   };
 }
