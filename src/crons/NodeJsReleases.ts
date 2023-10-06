@@ -29,7 +29,7 @@ export default new Cron({
 
     context.logger.info(`Found new Node.js releases`, entries);
 
-    const channel = findTextChannelByName(context.client.channels, 'nodejs');
+    const channel = findTextChannelByName(context.client.channels, 'news');
 
     for (const release of entries) {
       const completeContent = `# Release ${release.title}\n\n${
