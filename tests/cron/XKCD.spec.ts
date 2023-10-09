@@ -16,7 +16,7 @@ test('getLastXKCDStrip', async () => {
   expect(typeof strip.title).toBe('string');
 
   expect(strip.description).toBeTruthy();
-  expect(typeof strip.title).toBe('string');
+  expect(typeof strip.description).toBe('string');
 
   expect(strip.imageUrl).toBeTruthy();
   expect(typeof strip.imageUrl).toBe('string');
