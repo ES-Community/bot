@@ -1,15 +1,6 @@
 import { Cron, findTextChannelByName } from '../framework/index.js';
 import got from 'got';
-import { parse } from 'node-html-parser';
-import { decode, encode } from 'html-entities';
 import { KeyValue } from '../database/index.js';
-import { NodeHtmlMarkdown } from 'node-html-markdown';
-
-const nhm = new NodeHtmlMarkdown({
-  bulletMarker: '-',
-  useLinkReferenceDefinitions: false,
-  useInlineLinks: true,
-});
 
 export default new Cron({
   enabled: true,
@@ -20,7 +11,7 @@ export default new Cron({
   // schedule: '* * * * *',
   async handle(context) {
     // retrieve last release id from db
-    const lastRelease = (await KeyValue.get<string>('Last-Cron-Node.js')) ?? '';
+    const lastRelease = (await KeyValue.get<number>('Last-Cron-Node.js')) ?? 0;
     // fetch last releases from gh filtered by releases older or equal than the stored one
     const entries = await getLastNodeReleases(lastRelease);
 
@@ -32,23 +23,33 @@ export default new Cron({
     const channel = findTextChannelByName(context.client.channels, 'news');
 
     for (const release of entries) {
-      const completeContent = `# Release ${release.title}\n\n${
-        release.link
-      }\n\n${nhm.translate(release.content)}`;
-      const indexOfCommit = completeContent.indexOf('\n# Commits\n');
-      const content =
-        indexOfCommit >= 0
-          ? completeContent.slice(0, indexOfCommit)
-          : completeContent;
+      await channel.send({
+        content: `# Release ${release.title}\n\n<${release.link}>`,
+      });
 
-      // fence message by 2000 char chunks
-      for (
-        let start = 0, end = 2000;
-        start < content.length;
-        start += 2000, end += 2000
-      ) {
-        await channel.send({ content: content.slice(start, end) });
+      // remove the Commits section and after
+      const content = release.content
+        .replace(/\r?\n?\r?\n#{1,6}\s+Commits\r?\n.*$/, '')
+        .replaceAll('\r\n', '\n');
+
+      const lines = content.split('\n');
+
+      let message = '';
+      for (const line of lines) {
+        if (message.length + line.length > 2000) {
+          const m = await channel.send(message);
+          await m.suppressEmbeds(true);
+
+          message = '';
+        }
+        message += '\n' + line;
       }
+      if (message) {
+        const m = await channel.send(message);
+        await m.suppressEmbeds(true);
+      }
+
+      await channel.send({ content: `${release.link}` });
 
       await KeyValue.set('Last-Cron-Node.js', release.id); // update id in db
     }
@@ -56,7 +57,7 @@ export default new Cron({
 });
 
 interface AtomEntry {
-  id: string;
+  id: number;
   link: string;
   title: string;
   content: string;
@@ -67,94 +68,50 @@ interface AtomEntry {
   };
 }
 
+interface GithubRelease {
+  html_url: string;
+  id: number;
+  name: string;
+  draft: boolean;
+  prerelease: boolean;
+  published_at: string;
+  body: string;
+  author: {
+    login: string;
+    avatar_url: string;
+  };
+}
+
 export async function getLastNodeReleases(
-  skipAfterId: string,
+  skipAfterId: number,
 ): Promise<AtomEntry[]> {
-  const { body } = await got('https://github.com/nodejs/node/releases.atom');
-  const atom = parse(body);
+  const releases = await got(
+    'https://api.github.com/repos/nodejs/node/releases',
+  ).json<GithubRelease[]>();
 
   let shouldSkip = false;
   return (
-    atom
-      .querySelectorAll('entry')
-      .map((entry) => {
-        const originContent = decode(
-          entry.querySelector('content[type="html"]')?.textContent,
-        );
-        const document = parse(originContent);
-
-        {
-          // clean up commit and PR links
-          const internalLinks = document.querySelectorAll(
-            'a[href*="github.com/nodejs/node/commit"], a[href*="github.com/nodejs/node/pull"]',
-          );
-          for (const link of internalLinks) {
-            link.insertAdjacentHTML('beforebegin', link.innerHTML);
-            link.remove();
-          }
-
-          // remove embed on other links
-          const externalLinks = document.querySelectorAll('a');
-          for (const link of externalLinks) {
-            link.insertAdjacentHTML('beforebegin', encode('<'));
-            link.insertAdjacentHTML('afterend', encode('>'));
-          }
-
-          // ensure code blocks is rendered as codeblock
-          const codes = document.querySelectorAll('div.highlight');
-          for (const code of codes) {
-            const langCls =
-              code.classList.value.find((cls) =>
-                cls.startsWith('highlight-source-'),
-              ) ?? '';
-            const lang = langCls.replace('highlight-source-', '');
-            const markdownBlock = `<pre class="language-${lang}"><code>${code.getAttribute(
-              'data-snippet-clipboard-copy-content',
-            )}</code></pre>`;
-            code.insertAdjacentHTML('beforebegin', markdownBlock);
-            code.remove();
-          }
-
-          // up titles (start to h3), so it's still compatibles with discord
-          for (const title of document.querySelectorAll('h3'))
-            title.tagName = 'h1';
-          for (const title of document.querySelectorAll('h4'))
-            title.tagName = 'h2';
-          for (const title of document.querySelectorAll('h5'))
-            title.tagName = 'h3';
-          for (const title of document.querySelectorAll('h6'))
-            title.tagName = 'h3';
-        }
-
-        const content = document.innerHTML;
-
-        return {
-          id: entry.querySelector('id')?.textContent ?? '',
-          link: entry.querySelector('link')?.getAttribute('href') ?? '',
-          title: entry.querySelector('title')?.textContent ?? '',
-          content,
-          author: {
-            name: entry.querySelector('author name')?.textContent ?? '',
-            image:
-              entry.querySelector('media\\:thumbnail')?.getAttribute('url') ??
-              '',
-          },
-          date: new Date(
-            entry.querySelector('updated')?.textContent ?? new Date(),
-          ),
-        };
-      })
+    releases
       // recent to old (title is a better attribute than date, because it's the updated field)
-      .sort((a, b) => b.title.localeCompare(a.title))
-      // remove older items
-      .filter((entry) => {
-        if (entry.id === skipAfterId) {
+      .sort((a, b) => b.published_at.localeCompare(a.published_at))
+      .filter((release) => {
+        if (release.id === skipAfterId) {
           shouldSkip = true;
         }
 
         return !shouldSkip;
       })
-      // old to recent
+      .map((release) => ({
+        id: release.id,
+        link: release.html_url,
+        title: release.name,
+        date: new Date(release.published_at),
+        content: release.body,
+        author: {
+          name: release.author.login,
+          image: release.author.avatar_url,
+        },
+      }))
       .reverse()
   );
 }
