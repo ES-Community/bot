@@ -4,8 +4,8 @@
 
 ### Prérequis
 
-- Node.js v18
-- npm v8
+- Node.js v20
+- npm v10
 - Un bot Discord installé sur une copie du serveur ES Community.
   - Création et gestion de bots: https://discord.com/developers/applications/ -> App -> Bot
   - Il faut activer "MESSAGE CONTENT INTENT" pour le bot car il a besoin de lire le contenu des messages.
