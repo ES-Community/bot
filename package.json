@@ -10,7 +10,7 @@
     "format": "prettier --write .",
     "lint": "eslint src --ext ts",
     "lint-fix": "npm run lint -- --fix",
-    "start": "nodemon --watch \"src/**/*.ts\" -e ts --exec \"ts-node-esm -r dotenv/config src/bot.ts\"",
+    "start": "nodemon --watch \"src/**/*.ts\" -e ts --exec \"node -r dotenv/config --import ./register-ts-node.js src/bot.ts\"",
     "test": "npm run test-only && npm run lint && npm run check-types && npm run check-format",
     "test-only": "vitest run",
     "test-coverage": "vitest run --coverage",
@@ -42,7 +42,7 @@
   "devDependencies": {
     "@types/cron": "^2.0.0",
     "@types/emoji-regex": "^8.0.0",
-    "@types/node": "^18.11.19",
+    "@types/node": "^20.8.6",
     "@types/ws": "^8.5.4",
     "@typescript-eslint/eslint-plugin": "^5.50.0",
     "@typescript-eslint/parser": "^5.50.0",
@@ -55,9 +55,9 @@
     "vitest": "^0.28.4"
   },
   "engines": {
-    "node": "18.x"
+    "node": "20.x"
   },
   "volta": {
-    "node": "18.18.0"
+    "node": "20.8.1"
   }
 }
