@@ -22,7 +22,7 @@ export default new Cron({
   description:
     'Vérifie toutes les demi heures si GoG offre un jeu (promotion gratuite) et alerte dans #jeux',
   schedule: '5,35 * * * *',
-  // schedule: "* * * * *", // switch for testing
+  // schedule: '* * * * *', // switch for testing
   async handle(context) {
     const game = await getOfferedGame(context.logger);
 
@@ -38,10 +38,18 @@ export default new Cron({
     const channel = findTextChannelByName(context.client.channels, 'jeux');
 
     const embed = new EmbedBuilder()
-      .setTitle(game.title)
-      .setURL(game.link)
+      .setTitle(`GoG - ${game.title}`)
+      .setURL('https://www.gog.com/#giveaway')
       .setDescription(game.description)
       .setImage(game.banner)
+      .addFields({
+        name: 'URL du jeu',
+        value: game.link,
+      })
+      .addFields({
+        name: 'Désinscription newsletter',
+        value: 'https://www.gog.com/fr/account/settings/subscriptions',
+      })
       .addFields({
         name: 'Fin',
         value: game.discountEndDate.toLocaleDateString('fr-FR', dateFmtOptions),
