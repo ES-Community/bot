@@ -26,12 +26,7 @@ export default new Cron({
       await channel.send({
         content: `# Release ${release.title}\n\n<${release.link}>`,
       });
-
-      // remove the Commits section and after
-      const content = release.content
-        .replace(/\r?\n?\r?\n#{1,6}\s+Commits\r?\n.*$/, '')
-        .replaceAll('\r\n', '\n');
-
+      const content = release.content.replaceAll('\r\n', '\n');
       const lines = content.split('\n');
 
       let message = '';
@@ -42,6 +37,10 @@ export default new Cron({
 
           message = '';
         }
+
+        // remove the Commits section and after
+        if (line.match(/#{1,6}\s+Commits?/)) break;
+
         message += '\n' + line;
       }
       if (message) {
