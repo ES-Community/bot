@@ -20,26 +20,26 @@ export default new Cron({
   enabled: true,
   name: 'GoG',
   description:
-    'Vérifie toutes les demi heures si GoG offre un jeu (promotion gratuite) et alerte dans #jeux',
+    'Vérifie toutes les heures si GoG offre un jeu (promotion gratuite) et alerte dans #jeux',
   schedule: '5 * * * *',
   // schedule: '* * * * *', // switch for testing
   async handle(context) {
     const game = await getOfferedGame(context.logger);
 
     // vérifie le jeu trouvé avec la dernière entrée
-    const gameStoreIdentity = game?.title.normalize().trim() ?? null;
+    const gameStoreIdentity = game?.title;
 
     const lastCron = await KeyValue.get<string>('Last-Cron-GOG');
-    if (gameStoreIdentity === lastCron?.normalize().trim()) return; // skip si identique
+    if (gameStoreIdentity === lastCron) return; // skip si identique
 
     await KeyValue.set('Last-Cron-GOG', gameStoreIdentity); // met à jour sinon
 
-    const lastGame = await KeyValue.get<string>('Last-Cron-GOG-Founded');
-    if (gameStoreIdentity === lastGame?.normalize().trim()) return; // skip si identique
+    const lastGame = await KeyValue.get<string>('Last-Cron-GOG-Found');
+    if (gameStoreIdentity === lastGame) return; // skip si identique
 
     if (!game) return; // skip si pas de jeu
 
-    await KeyValue.set('Last-Cron-GOG-Founded', gameStoreIdentity); // met à jour sinon
+    await KeyValue.set('Last-Cron-GOG-Found', gameStoreIdentity); // met à jour sinon
 
     const channel = findTextChannelByName(context.client.channels, 'jeux');
 
