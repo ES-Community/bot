@@ -20,20 +20,26 @@ export default new Cron({
   enabled: true,
   name: 'GoG',
   description:
-    'Vérifie toutes les demi heures si GoG offre un jeu (promotion gratuite) et alerte dans #jeux',
-  schedule: '5,35 * * * *',
+    'Vérifie toutes les heures si GoG offre un jeu (promotion gratuite) et alerte dans #jeux',
+  schedule: '5 * * * *',
   // schedule: '* * * * *', // switch for testing
   async handle(context) {
     const game = await getOfferedGame(context.logger);
 
     // vérifie le jeu trouvé avec la dernière entrée
-    const lastGame = await KeyValue.get<string>('Last-Cron-GOG');
     const gameStoreIdentity = game?.title ?? null;
-    if (lastGame === gameStoreIdentity) return; // skip si identique
+
+    const lastCron = await KeyValue.get<string>('Last-Cron-GOG');
+    if (gameStoreIdentity === lastCron) return; // skip si identique
 
     await KeyValue.set('Last-Cron-GOG', gameStoreIdentity); // met à jour sinon
 
+    const lastGame = await KeyValue.get<string>('Last-Cron-GOG-Found');
+    if (gameStoreIdentity === lastGame) return; // skip si identique
+
     if (!game) return; // skip si pas de jeu
+
+    await KeyValue.set('Last-Cron-GOG-Found', gameStoreIdentity); // met à jour sinon
 
     const channel = findTextChannelByName(context.client.channels, 'jeux');
 
@@ -86,7 +92,7 @@ interface Game {
 
 /**
  * Fetches offered games from the Epic Games GraphQL API. If there are any, and they
- * were offered between the previous and current cron execution, returns them.
+ * were offered between the previous and current cron execution, return them.
  * @param logger
  */
 export async function getOfferedGame(logger: Logger): Promise<Game | null> {
@@ -95,6 +101,8 @@ export async function getOfferedGame(logger: Logger): Promise<Game | null> {
       'Accept-Language':
         'fr,fr-FR;q=0.8,fr-FR;q=0.7,en-US;q=0.5,en-US;q=0.3,en;q=0.2',
     },
+    followRedirect: true,
+    throwHttpErrors: true,
   };
   const { body: homeBody } = await got<string>(
     'https://www.gog.com/fr#giveaway', // ensure get fr info or it's geolocalized
@@ -155,7 +163,7 @@ export async function getOfferedGame(logger: Logger): Promise<Game | null> {
     );
 
     return {
-      title: title.trim(),
+      title: title.normalize().trim(),
       description: decode(description.trim()),
       link: 'https://www.gog.com/#giveaway',
       banner: `https:${banner}`,
