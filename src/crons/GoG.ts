@@ -27,7 +27,7 @@ export default new Cron({
     const game = await getOfferedGame(context.logger);
 
     // vérifie le jeu trouvé avec la dernière entrée
-    const gameStoreIdentity = game?.title;
+    const gameStoreIdentity = game?.title ?? null;
 
     const lastCron = await KeyValue.get<string>('Last-Cron-GOG');
     if (gameStoreIdentity === lastCron) return; // skip si identique
