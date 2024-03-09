@@ -198,7 +198,7 @@ export async function getOfferedGames(
   logger: Logger,
 ): Promise<Game[]> {
   const { body } = await got<EpicGamesProducts>(
-    'https://www.epicgames.com/graphql',
+    'https://graphql.epicgames.com/graphql',
     {
       method: 'POST',
       json: {
