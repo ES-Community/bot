@@ -38,25 +38,17 @@ export default new Cron({
 });
 
 /**
- * Subset of the fields returned by the WordPress Posts API.
+ * Subset of the fields returned by the Substack API.
  */
-interface WordPressPost {
+interface SubstackPost {
   id: number;
-  date_gmt: string;
-  link: string;
-  title: {
-    rendered: string;
-  };
-  content: {
-    rendered: string;
-  };
-  yoast_head_json?: {
-    og_image: Array<{ url: string }>;
-  };
+  canonical_url: string;
+  title: string;
+  cover_image: string;
 }
 
 /**
- * Chronicle information extracted from the WordPress post.
+ * Chronicle information extracted from the Substack post.
  */
 interface WorkChronicle {
   /**
@@ -83,8 +75,8 @@ interface WorkChronicle {
  * Otherwise, or if the post does not contain any image URL, returns null.
  */
 export async function getLastChronicle(): Promise<WorkChronicle | null> {
-  const { body: posts } = await got<WordPressPost[]>(
-    'https://workchronicles.com/wp-json/wp/v2/posts?per_page=1',
+  const { body: posts } = await got<SubstackPost[]>(
+    'https://workchronicles.substack.com/api/v1/archive?sort=new&limit=1',
     { responseType: 'json', https: { rejectUnauthorized: false } },
   );
 
@@ -94,20 +86,16 @@ export async function getLastChronicle(): Promise<WorkChronicle | null> {
 
   const [chronicle] = posts;
 
-  let imageUrl = chronicle.yoast_head_json?.og_image.at(0)?.url;
-  if (!imageUrl) {
-    const chronicleImageUrlReg = /src="([^"]+)"/;
-    const urlMatch = chronicleImageUrlReg.exec(chronicle.content.rendered);
-    if (!urlMatch) {
-      return null;
-    }
-    imageUrl = urlMatch[1];
+  if (!chronicle.title.startsWith('(comic)')) {
+    return null;
   }
+
+  const title = chronicle.title.replace('(comic)', '').trim();
 
   return {
     id: chronicle.id,
-    link: chronicle.link,
-    title: chronicle.title.rendered,
-    imageUrl,
+    link: chronicle.canonical_url,
+    title,
+    imageUrl: chronicle.cover_image,
   };
 }
