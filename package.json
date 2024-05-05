@@ -55,9 +55,9 @@
     "vitest": "^0.28.4"
   },
   "engines": {
-    "node": "20.x"
+    "node": "22.x"
   },
   "volta": {
-    "node": "20.8.1"
+    "node": "22.1.0"
   }
 }
