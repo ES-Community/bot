@@ -86,10 +86,11 @@ export class Cron extends Base {
   }
 
   public start(bot: Bot): void {
-    const cronJob = new CronJob({
+    const cronJob = CronJob.from({
       cronTime: this.schedule,
       onTick: () => {
-        const date = cronJob.lastDate();
+        // Returns the theoretical date of the current tick (more precise than `new Date()`.
+        const date = cronJob.lastDate() as Date;
         this.executeJob(date, bot);
       },
     });
