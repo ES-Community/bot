@@ -5,7 +5,7 @@ export default new FormatChecker({
   name: 'Job',
   description: 'Force le formatage du canal #jobs.',
   channelName: 'jobs',
-  checker({ cleanContent }, logger) {
+  checker(cleanContent, logger) {
     const lines = cleanContent.split('\n');
     const headerParts = lines[0].split(' - ');
 

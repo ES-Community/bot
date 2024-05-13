@@ -7,7 +7,7 @@ import { Base, BaseConfig } from './Base.js';
 import { Bot } from './Bot.js';
 import { findTextChannelByName, isTextChannel } from './helpers.js';
 
-type FunctionChecker = (message: Message, logger: Logger) => boolean;
+type FunctionChecker = (cleanContent: string, logger: Logger) => boolean;
 
 export interface FormatCheckerConfig extends BaseConfig {
   channelName: string;
@@ -38,6 +38,11 @@ export class FormatChecker extends Base {
     this._messageUpdateHandler = this._messageUpdateHandler.bind(this);
   }
 
+  isMessageValid(cleanContent: string, logger: Logger) {
+    if (this.checker instanceof RegExp) return this.checker.test(cleanContent);
+    return this.checker(cleanContent, logger);
+  }
+
   async _messageHandler(message: Message): Promise<void> {
     if (this.bot === undefined) return;
     if (
@@ -53,9 +58,7 @@ export class FormatChecker extends Base {
       checkerName: this.name,
     });
 
-    if (this.checker instanceof RegExp) {
-      if (this.checker.test(message.cleanContent)) return;
-    } else if (this.checker(message, logger)) return;
+    if (this.isMessageValid(message.cleanContent, logger)) return;
 
     const { cleanContent, author } = message;
 
