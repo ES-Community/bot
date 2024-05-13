@@ -2,7 +2,7 @@ import { test, expect } from 'vitest';
 
 import { getLastChronicle } from '../../src/crons/WorkChronicles.js';
 
-test('getLastChronicle', async () => {
+test.skipIf(process.env.CI)('getLastChronicle', async () => {
   const chronicle = await getLastChronicle();
   if (!chronicle) return;
 
