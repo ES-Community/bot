@@ -172,7 +172,7 @@ export async function getOfferedGame(logger: Logger): Promise<Game | null> {
   }
 
   const description =
-    gameHTML.querySelector('.content-summary-item__description')?.innerText ??
+    gameHTML.querySelector('.content-summary-item__description')?.textContent ??
     '';
   const banner =
     gameHTML

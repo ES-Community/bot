@@ -240,10 +240,12 @@ export async function getOfferedGames(
     const discount = game.price.lineOffers[0].appliedRules[0];
     let slug =
       game.productSlug ||
-      game.offerMappings?.find((i) => i.pageType === 'productHome')?.pageSlug ||
-      game.catalogNs.mappings?.find((i) => i.pageType === 'productHome')
+      game.offerMappings?.find((mapping) => mapping.pageType === 'productHome')
         ?.pageSlug ||
-      (!/^[0-9a-f]+$/.test(game.urlSlug) && game.urlSlug) ||
+      game.catalogNs.mappings?.find(
+        (mapping) => mapping.pageType === 'productHome',
+      )?.pageSlug ||
+      (!/^[\da-f]+$/.test(game.urlSlug) && game.urlSlug) ||
       '';
 
     if (!slug) {

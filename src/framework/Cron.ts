@@ -46,7 +46,7 @@ export class Cron extends Base {
     super(config);
     try {
       new CronTime(config.schedule);
-    } catch (error) {
+    } catch {
       throw new Error(`Invalid Cron schedule format: "${config.schedule}"`);
     }
     this.schedule = config.schedule;
@@ -79,8 +79,8 @@ export class Cron extends Base {
               .setColor('Red'),
           ],
         });
-      } catch (error2) {
-        logger.error(error2, 'failed to send error to #logs');
+      } catch (error_) {
+        logger.error(error_, 'failed to send error to #logs');
       }
     }
   }

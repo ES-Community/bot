@@ -38,8 +38,10 @@ export default new Cron({
           message = '';
         }
 
-        // remove the Commits section and after
-        if (line.match(/#{1,6}\s+Commits?/)) break;
+        // Remove the Commits section and after.
+        if (/#{1,6}\s+Commits?/.test(line)) {
+          break;
+        }
 
         message += '\n' + line;
       }

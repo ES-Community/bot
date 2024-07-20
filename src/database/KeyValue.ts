@@ -1,4 +1,4 @@
-import DB from './db.js';
+import DB from './database.js';
 
 type JSONScalar = boolean | number | string | null;
 type JSONTypes = JSONScalar | JSONObject | JSONArray;
@@ -100,7 +100,9 @@ export const KeyValue = {
     const left = 0b10 & flag ? '%' : '';
     const right = 0b01 & flag ? '%' : '';
 
-    const likeKeyEscaped = likeKey.replace(/%/g, '\\%').replace(/_/g, '\\_');
+    const likeKeyEscaped = likeKey
+      .replaceAll('%', String.raw`\%`)
+      .replaceAll('_', String.raw`\_`);
     const likePart = `${left}${likeKeyEscaped}${right}`;
 
     return KeyValueStore<IKeyValue[]>()

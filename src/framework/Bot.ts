@@ -76,20 +76,20 @@ export class Bot {
     let list: string[];
     try {
       list = await fs.readdir(directory);
-    } catch (err) {
-      if (err.code === 'ENOENT') {
+    } catch (error) {
+      if (error.code === 'ENOENT') {
         throw new Error(
           `Failed to load "${name}" in ${directory}. Directory could not be read`,
         );
       }
-      throw err;
+      throw error;
     }
 
     const allExportsPromises = list
       .filter((file) => {
-        const ext = path.extname(file);
+        const extension = path.extname(file);
         // Ignore non-source files (such as ".map")
-        return ['.js', '.ts'].includes(ext);
+        return ['.js', '.ts'].includes(extension);
       })
       .map(async (file) => {
         const filePath = path.join(directory, file);
@@ -119,19 +119,19 @@ export class Bot {
   }
 
   private startCrons() {
-    this.crons.forEach((cron) => cron.start(this));
+    for (const cron of this.crons) cron.start(this);
   }
 
   private stopCrons() {
-    this.crons.forEach((cron) => cron.stop());
+    for (const cron of this.crons) cron.stop();
   }
 
   private startFormatCheckers() {
-    this.formatCheckers.forEach((formatChecker) => formatChecker.start(this));
+    for (const formatChecker of this.formatCheckers) formatChecker.start(this);
   }
 
   private stopFormatCheckers() {
-    this.formatCheckers.forEach((formatChecker) => formatChecker.stop(this));
+    for (const formatChecker of this.formatCheckers) formatChecker.stop(this);
   }
 
   /**
