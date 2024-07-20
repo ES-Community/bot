@@ -74,22 +74,22 @@ export class FormatChecker extends Base {
       `Le message que vous avez posté dans ${message.channel} est incorrectement formaté, il a donc été supprimé.`,
       'Pour rappel, voici le message que vous aviez envoyé :',
       `\`\`\`\n${cleanContent}\n\`\`\``,
-      ...(this.examples !== undefined
-        ? [
+      ...(this.examples === undefined
+        ? []
+        : [
             `Voici ${
               plural ? 'des' : 'un'
             } exemple${pluralSuffix} de message${pluralSuffix} correctement formaté${pluralSuffix} :`,
             ...this.examples.map((example) => `\`\`\`\n${example}\`\`\``),
-          ]
-        : []),
+          ]),
     ].join('\n');
 
     try {
       await author.send(`Bonjour,\n${warningContent}`);
-    } catch (err) {
-      if (err.code !== 50007 /* Cannot send messages to this user */) {
+    } catch (error) {
+      if (error.code !== 50_007 /* Cannot send messages to this user */) {
         logger.error(
-          err,
+          error,
           'failed to send private message to user %s (id: %s)',
           author.tag,
           author.id,

@@ -1,2 +1,2 @@
-export * from './db.js';
+export * from './database.js';
 export * from './KeyValue.js';

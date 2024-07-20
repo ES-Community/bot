@@ -16,7 +16,7 @@ export function findTextChannelByName(
     throw new Error(`found no #${name} channel`);
   }
   if (!(channel instanceof TextChannel)) {
-    throw new Error(`channel #${name} is not a text channel`);
+    throw new TypeError(`channel #${name} is not a text channel`);
   }
   return channel;
 }
