@@ -159,6 +159,7 @@ export class Bot {
     try {
       await Promise.all([
         this.client.login(this.token),
+        // @ts-expect-error Weird error about Client not being assignable to EventEmitter<DefaultEventMap>.
         once(this.client, 'ready'),
       ]);
       this.startCrons();
