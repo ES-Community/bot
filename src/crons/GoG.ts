@@ -46,7 +46,11 @@ export default new Cron({
     const embed = new EmbedBuilder()
       .setTitle(`GoG - ${game.title}`)
       .setURL('https://www.gog.com/#giveaway')
-      .setDescription(game.description)
+      .setDescription(
+        game.description.length > 1000
+          ? game.description.slice(0, 999) + '…'
+          : game.description,
+      )
       .setImage(game.banner)
       .addFields({
         name: 'URL du jeu',
@@ -112,7 +116,9 @@ export async function getOfferedGame(logger: Logger): Promise<Game | null> {
   if (!homeBody) return null;
   const html = parse(homeBody);
   if (!html) return null;
-  const SEOLink = html.querySelector('a#giveaway');
+  const giveawayNode = html.querySelector('#giveaway');
+  if (!giveawayNode) return null;
+  const SEOLink = giveawayNode.querySelector('a.giveaway__overlay-link');
   if (!SEOLink) return null;
   const endTimestamp = Number(
     html
@@ -121,7 +127,7 @@ export async function getOfferedGame(logger: Logger): Promise<Game | null> {
   );
 
   const { body: gameBody } = await got<string>(
-    `https://www.gog.com${SEOLink.getAttribute('ng-href')}`,
+    SEOLink.getAttribute('href') ?? '',
     GOG_GOT_OPTIONS,
   );
   if (!gameBody) return null;
@@ -135,15 +141,16 @@ export async function getOfferedGame(logger: Logger): Promise<Game | null> {
   if (!gameJSON) {
     // the gift link redirect to incorrect page
     const title =
-      SEOLink.querySelector('.giveaway-banner__title')?.textContent ??
-      SEOLink.getAttribute('giveaway-banner-id') ??
+      giveawayNode.querySelector('.giveaway-banner__title')?.textContent ??
+      giveawayNode.getAttribute('giveaway-banner-id') ??
       '';
     const description =
-      SEOLink.querySelector('.giveaway-banner__description')?.textContent ?? '';
+      giveawayNode.querySelector('.giveaway-banner__description')
+        ?.textContent ?? '';
     const srcset =
-      SEOLink.querySelector(
-        '.giveaway-banner__image source[type="image/png"]',
-      )?.getAttribute('srcset') ?? '';
+      giveawayNode
+        .querySelector('.giveaway-banner__image source[type="image/png"]')
+        ?.getAttribute('srcset') ?? '';
     /*
      * srcset="
      * //images-1.gog-statics.com/c26a3d08d01005d92fbc4b658ab226fc5de374d3746f313a01c83e615cc066c1_giveaway_banner_logo_502_2x.png 2x,
@@ -172,8 +179,9 @@ export async function getOfferedGame(logger: Logger): Promise<Game | null> {
   }
 
   const description =
-    gameHTML.querySelector('.content-summary-item__description')?.textContent ??
-    '';
+    gameHTML
+      .querySelector('.content-summary-section .description')
+      ?.textContent?.trim() ?? '';
   const banner =
     gameHTML
       .querySelector('head meta[property="og:image"]')
@@ -185,15 +193,27 @@ export async function getOfferedGame(logger: Logger): Promise<Game | null> {
   );
 
   const rating = gameJSON.aggregateRating?.ratingValue ?? '?';
+  let link: string = gameJSON.offers[0].url;
+  {
+    const searchIndex = link.indexOf('?');
+    if (searchIndex !== -1) {
+      link = link.slice(0, searchIndex);
+    }
+  }
+
+  const frOffer = gameJSON.offers.find(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (o: any) => new URL(o.url).searchParams.get('countryCode') === 'FR',
+  );
 
   return {
     title: gameJSON.name.trim(),
     description: decode(description),
     // link: 'https://www.gog.com/fr#giveaway',
-    link: gameJSON.offers.url,
+    link,
     thumbnail: gameJSON.image,
     banner,
-    originalPrice: gameJSON.offers.price,
+    originalPrice: `${frOffer.price}€`,
     discountEndDate: new Date(endTimestamp),
     rating: `${rating} / 5`,
   };
