@@ -25,6 +25,7 @@ test('getOfferedGames', async () => {
   // expect(game.originalPrice).toBeTruthy();
   // expect(typeof game.originalPrice).toBe('string');
 
+  // TODO: check the date is valid and find the discountEndDate in GoG pages
   expect(game.discountEndDate).toBeTruthy();
   expect(game.discountEndDate instanceof Date).toBe(true);
 
