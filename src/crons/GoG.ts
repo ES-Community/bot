@@ -120,16 +120,16 @@ export async function getOfferedGame(logger: Logger): Promise<Game | null> {
   if (!giveawayNode) return null;
   const SEOLink = giveawayNode.querySelector('a.giveaway__overlay-link');
   if (!SEOLink) return null;
+  const gameURL = SEOLink.getAttribute('href');
+  if (!gameURL) return null;
+
   const endTimestamp = Number(
     html
       .querySelector('.giveaway-banner__footer gog-countdown-timer')
       ?.getAttribute('end-date'),
   );
 
-  const { body: gameBody } = await got<string>(
-    SEOLink.getAttribute('href') ?? '',
-    GOG_GOT_OPTIONS,
-  );
+  const { body: gameBody } = await got<string>(gameURL, GOG_GOT_OPTIONS);
   if (!gameBody) return null;
   const gameHTML = parse(gameBody);
   if (!gameHTML) return null;
@@ -213,7 +213,7 @@ export async function getOfferedGame(logger: Logger): Promise<Game | null> {
     link,
     thumbnail: gameJSON.image,
     banner,
-    originalPrice: `${frOffer.price}€`,
+    originalPrice: `${frOffer.price} €`,
     discountEndDate: new Date(endTimestamp),
     rating: `${rating} / 5`,
   };
