@@ -1,4 +1,4 @@
-import { EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, SnowflakeUtil } from 'discord.js';
 import got from 'got';
 import { decode } from 'html-entities';
 
@@ -34,6 +34,8 @@ export default new Cron({
           .setURL(strip.link)
           .setImage(strip.imageUrl),
       ],
+      enforceNonce: true,
+      nonce: SnowflakeUtil.generate().toString(),
     });
   },
 });

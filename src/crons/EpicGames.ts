@@ -1,4 +1,4 @@
-import { EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, SnowflakeUtil } from 'discord.js';
 import got from 'got';
 import type { Logger } from 'pino';
 
@@ -65,6 +65,8 @@ export default new Cron({
             )
             .setTimestamp(),
         ],
+        enforceNonce: true,
+        nonce: SnowflakeUtil.generate().toString(),
       });
     }
   },

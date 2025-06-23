@@ -1,4 +1,4 @@
-import { EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, SnowflakeUtil } from 'discord.js';
 import got from 'got';
 import { decode } from 'html-entities';
 import { parse } from 'node-html-parser';
@@ -78,7 +78,11 @@ export default new Cron({
       embed.addFields({ name: 'Note', value: `⭐ ${game.rating}` });
     }
 
-    await channel.send({ embeds: [embed] });
+    await channel.send({
+      embeds: [embed],
+      enforceNonce: true,
+      nonce: SnowflakeUtil.generate().toString(),
+    });
   },
 });
 
