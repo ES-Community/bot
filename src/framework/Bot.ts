@@ -4,10 +4,11 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { Client } from 'discord.js';
-import { pino, Logger, transport } from 'pino';
+import type { Logger } from 'pino';
+import { pino, transport } from 'pino';
 
+import type { Base, BaseConfig } from './Base.js';
 import { Cron } from './Cron.js';
-import { Base, BaseConfig } from './Base.js';
 import { FormatChecker } from './FormatChecker.js';
 
 function toPath(pathOrUrl: string | URL): string {
@@ -31,9 +32,7 @@ export interface BotOptions {
   formatCheckers?: string | URL;
 }
 
-type Constructor<T extends Base, U extends BaseConfig> = {
-  new (config: U): T;
-};
+type Constructor<T extends Base, U extends BaseConfig> = new (config: U) => T;
 
 export class Bot {
   private readonly options: BotOptions;
@@ -159,7 +158,6 @@ export class Bot {
     try {
       await Promise.all([
         this.client.login(this.token),
-        // @ts-expect-error Weird error about Client not being assignable to EventEmitter<DefaultEventMap>.
         once(this.client, 'ready'),
       ]);
       this.startCrons();

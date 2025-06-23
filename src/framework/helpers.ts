@@ -1,9 +1,5 @@
-import {
-  Channel,
-  ChannelManager,
-  GuildChannelManager,
-  TextChannel,
-} from 'discord.js';
+import type { Channel, ChannelManager, GuildChannelManager } from 'discord.js';
+import { TextChannel } from 'discord.js';
 
 export function findTextChannelByName(
   manager: ChannelManager | GuildChannelManager,

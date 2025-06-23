@@ -2,7 +2,9 @@ import DB from './database.js';
 
 type JSONScalar = boolean | number | string | null;
 type JSONTypes = JSONScalar | JSONObject | JSONArray;
-type JSONObject = { [member: string]: JSONTypes };
+interface JSONObject {
+  [member: string]: JSONTypes;
+}
 type JSONArray = JSONTypes[];
 
 export interface IKeyValue<T extends JSONTypes = JSONTypes> {
@@ -10,19 +12,19 @@ export interface IKeyValue<T extends JSONTypes = JSONTypes> {
   value: T;
 }
 
-export enum SearchFlag {
-  Exact = 0b00,
-  StartsWith = 0b01,
-  EndsWith = 0b10,
-  Contains = 0b11,
-}
+export const SearchFlag = {
+  Exact: 0b00,
+  StartsWith: 0b01,
+  EndsWith: 0b10,
+  Contains: 0b11,
+} as const;
+export type SearchFlag = (typeof SearchFlag)[keyof typeof SearchFlag];
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export const KeyValueStore = <U extends {} = never>() => DB<U>('kv');
+export const KeyValueStore = <U extends object = never>() => DB<U>('kv');
 
 export const KeyValue = {
   size(): Promise<number> {
-    return KeyValueStore<number>()
+    return KeyValueStore<{ key: string }>()
       .count('key', { as: 'key' })
       .then((values) => values[0].key as number);
   },
@@ -38,13 +40,13 @@ export const KeyValue = {
       .then((values) => values.map((v: string) => JSON.parse(v)));
   },
 
-  entries<T extends JSONTypes = JSONTypes>(): Promise<[string, T][]> {
+  entries<T extends JSONTypes = JSONTypes>(): Promise<Array<[string, T]>> {
     return KeyValueStore<Iterable<IKeyValue>>()
       .select('key', 'value')
       .then((entries) => entries.map((kv) => [kv.key, JSON.parse(kv.value)]));
   },
 
-  all<T extends JSONTypes = JSONTypes>(): Promise<IKeyValue<T>[]> {
+  all<T extends JSONTypes = JSONTypes>(): Promise<Array<IKeyValue<T>>> {
     return KeyValueStore<IKeyValue[]>()
       .select('key', 'value')
       .then((items) => {
@@ -57,7 +59,7 @@ export const KeyValue = {
   },
 
   async has(key: string): Promise<boolean> {
-    return KeyValueStore<string>()
+    return KeyValueStore<{ key: string }>()
       .select('key')
       .where('key', key)
       .first()
@@ -67,7 +69,7 @@ export const KeyValue = {
   async get<T extends JSONTypes = JSONTypes>(
     key: string,
   ): Promise<T | undefined> {
-    const item = await KeyValueStore<string>()
+    const item = await KeyValueStore<{ value: string }>()
       .select('value')
       .where('key', key)
       .first();
@@ -80,7 +82,7 @@ export const KeyValue = {
   async set(key: string, value: JSONTypes): Promise<number> {
     return KeyValueStore<IKeyValue>()
       .insert({
-        key: key,
+        key,
         value: JSON.stringify(value),
       })
       .onConflict('key')
@@ -96,7 +98,7 @@ export const KeyValue = {
   search<T extends JSONTypes = JSONTypes>(
     likeKey: string,
     flag: SearchFlag = SearchFlag.Contains,
-  ): Promise<IKeyValue<T>[]> {
+  ): Promise<Array<IKeyValue<T>>> {
     const left = 0b10 & flag ? '%' : '';
     const right = 0b01 & flag ? '%' : '';
 

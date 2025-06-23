@@ -1,11 +1,11 @@
 import { EmbedBuilder } from 'discord.js';
 import got from 'got';
-import { Logger } from 'pino';
-
-import { Cron, findTextChannelByName } from '../framework/index.js';
-import { parse } from 'node-html-parser';
 import { decode } from 'html-entities';
+import { parse } from 'node-html-parser';
+import type { Logger } from 'pino';
+
 import { KeyValue } from '../database/index.js';
+import { Cron, findTextChannelByName } from '../framework/index.js';
 
 const dateFmtOptions: Intl.DateTimeFormatOptions = {
   timeZone: 'Europe/Paris',
@@ -48,7 +48,7 @@ export default new Cron({
       .setURL('https://www.gog.com/#giveaway')
       .setDescription(
         game.description.length > 1000
-          ? game.description.slice(0, 999) + '…'
+          ? `${game.description.slice(0, 999)}…`
           : game.description,
       )
       .setImage(game.banner)
@@ -68,13 +68,15 @@ export default new Cron({
       .setTimestamp();
 
     if (game.thumbnail) embed.setThumbnail(game.thumbnail);
-    if (game.originalPrice)
+    if (game.originalPrice) {
       embed.addFields({
         name: 'Prix',
         value: `${game.originalPrice}€ → **Gratuit**`,
       });
-    if (game.rating)
+    }
+    if (game.rating) {
       embed.addFields({ name: 'Note', value: `⭐ ${game.rating}` });
+    }
 
     await channel.send({ embeds: [embed] });
   },

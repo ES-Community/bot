@@ -12,7 +12,7 @@ export default new FormatChecker({
   name: 'Project',
   description: 'Force le formatage du canal #projets.',
   channelName: 'projets',
-  checker: (cleanContent) => projectRegexp.test(cleanContent + '\n'),
+  checker: (cleanContent) => projectRegexp.test(`${cleanContent}\n`),
   examples: [
     `**Nom du projet**\n\nDescription du projet\n\nhttps://github.com`,
   ],

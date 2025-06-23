@@ -1,6 +1,7 @@
-import { Cron, findTextChannelByName } from '../framework/index.js';
 import got from 'got';
+
 import { KeyValue } from '../database/index.js';
+import { Cron, findTextChannelByName } from '../framework/index.js';
 
 export default new Cron({
   enabled: true,
@@ -43,14 +44,14 @@ export default new Cron({
           break;
         }
 
-        message += '\n' + line;
+        message += `\n${line}`;
       }
       if (message) {
         const m = await channel.send(message);
         await m.suppressEmbeds(true);
       }
 
-      await channel.send({ content: `${release.link}` });
+      await channel.send({ content: release.link });
 
       await KeyValue.set('Last-Cron-Node.js', release.id); // update id in db
     }

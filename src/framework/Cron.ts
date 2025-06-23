@@ -1,11 +1,13 @@
 import { randomUUID } from 'node:crypto';
 
 import { CronJob, CronTime } from 'cron';
-import { Client, EmbedBuilder } from 'discord.js';
-import { Logger } from 'pino';
+import type { Client } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
+import type { Logger } from 'pino';
 
-import { Base, BaseConfig } from './Base.js';
-import { Bot } from './Bot.js';
+import type { BaseConfig } from './Base.js';
+import { Base } from './Base.js';
+import type { Bot } from './Bot.js';
 import { findTextChannelByName } from './helpers.js';
 
 export type CronHandler = (context: CronContext) => Promise<void>;

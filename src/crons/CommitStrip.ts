@@ -2,8 +2,8 @@ import { EmbedBuilder } from 'discord.js';
 import got from 'got';
 import { decode } from 'html-entities';
 
-import { Cron, findTextChannelByName } from '../framework/index.js';
 import { KeyValue } from '../database/index.js';
+import { Cron, findTextChannelByName } from '../framework/index.js';
 
 export default new Cron({
   enabled: false,
@@ -95,7 +95,7 @@ async function getLastCommitStrip(): Promise<CommitStrip | null> {
   }
 
   const [strip] = posts;
-  const stripDate = new Date(strip.date_gmt + '.000Z');
+  const stripDate = new Date(`${strip.date_gmt}.000Z`);
 
   const stripImageUrlReg = /src="([^"]+)"/;
   const urlMatch = stripImageUrlReg.exec(strip.content.rendered);

@@ -1,9 +1,9 @@
 import { EmbedBuilder } from 'discord.js';
 import got from 'got';
-import { Logger } from 'pino';
+import type { Logger } from 'pino';
 
-import { Cron, findTextChannelByName } from '../framework/index.js';
 import { KeyValue } from '../database/index.js';
+import { Cron, findTextChannelByName } from '../framework/index.js';
 
 const dateFmtOptions: Intl.DateTimeFormatOptions = {
   timeZone: 'Europe/Paris',
@@ -37,8 +37,8 @@ export default new Cron({
       context.logger.info(`Found a new offered game (${game.title})`);
 
       const message = new EmbedBuilder({ title: game.title, url: game.link });
-      game.thumbnail && message.setThumbnail(game.thumbnail);
-      game.banner && message.setImage(game.banner);
+      if (game.thumbnail) message.setThumbnail(game.thumbnail);
+      if (game.banner) message.setImage(game.banner);
 
       await channel.send({
         embeds: [
@@ -77,25 +77,25 @@ interface EpicGamesProducts {
   data: {
     Catalog: {
       searchStore: {
-        elements: {
+        elements: Array<{
           id: string;
           title: string;
           description: string;
-          keyImages: {
+          keyImages: Array<{
             type: 'OfferImageWide' | 'OfferImageTall' | 'Thumbnail';
             url: string;
-          }[];
+          }>;
           productSlug: string;
           catalogNs: {
-            mappings: {
+            mappings: Array<{
               pageSlug: string;
               pageType: 'productHome' | 'offer';
-            }[];
+            }>;
           };
-          offerMappings: {
+          offerMappings: Array<{
             pageSlug: string;
             pageType: 'productHome' | 'offer';
-          }[];
+          }>;
           urlSlug: string;
           price: {
             totalPrice: {
@@ -103,14 +103,14 @@ interface EpicGamesProducts {
                 originalPrice: string;
               };
             };
-            lineOffers: {
-              appliedRules: {
+            lineOffers: Array<{
+              appliedRules: Array<{
                 startDate: string;
                 endDate: string;
-              }[];
-            }[];
+              }>;
+            }>;
           };
-        }[];
+        }>;
         paging: {
           total: number;
         };
@@ -254,7 +254,7 @@ export async function getOfferedGames(
 
     // Sanitize the slug (e.g. sludge-life/home -> sludge-life).
     const slugSlashIndex = slug.indexOf('/');
-    if (slugSlashIndex >= 0) {
+    if (slugSlashIndex !== -1) {
       slug = slug.slice(0, slugSlashIndex);
     }
 
@@ -276,9 +276,9 @@ export async function getOfferedGames(
       id: game.id,
       title: game.title,
       description: game.description,
-      link: link,
-      thumbnail: thumbnail,
-      banner: banner,
+      link,
+      thumbnail,
+      banner,
       originalPrice: game.price.totalPrice.fmtPrice.originalPrice,
       discountStartDate: new Date(discount.startDate),
       discountEndDate: new Date(discount.endDate),
