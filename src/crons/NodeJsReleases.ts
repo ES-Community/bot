@@ -129,6 +129,6 @@ export async function getLastNodeReleases(
           image: release.author.avatar_url,
         },
       }))
-      .reverse()
+      .toReversed()
   );
 }
