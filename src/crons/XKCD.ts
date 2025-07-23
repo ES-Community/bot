@@ -1,9 +1,10 @@
-import { Cron, findTextChannelByName } from '../framework/index.js';
+import { EmbedBuilder, SnowflakeUtil } from 'discord.js';
 import got from 'got';
-import { parse } from 'node-html-parser';
 import { decode } from 'html-entities';
+import { parse } from 'node-html-parser';
+
 import { KeyValue } from '../database/index.js';
-import { EmbedBuilder } from 'discord.js';
+import { Cron, findTextChannelByName } from '../framework/index.js';
 
 export default new Cron({
   enabled: true,
@@ -36,6 +37,8 @@ export default new Cron({
           .setTimestamp(strip.date)
           .setFooter({ text: strip.description }),
       ],
+      enforceNonce: true,
+      nonce: SnowflakeUtil.generate().toString(),
     });
   },
 });

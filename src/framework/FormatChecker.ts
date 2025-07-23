@@ -1,10 +1,11 @@
 import { randomUUID } from 'node:crypto';
 
-import { Message, PartialMessage } from 'discord.js';
-import { Logger } from 'pino';
+import type { Message, PartialMessage } from 'discord.js';
+import type { Logger } from 'pino';
 
-import { Base, BaseConfig } from './Base.js';
-import { Bot } from './Bot.js';
+import type { BaseConfig } from './Base.js';
+import { Base } from './Base.js';
+import type { Bot } from './Bot.js';
 import { findTextChannelByName, isTextChannel } from './helpers.js';
 
 type FunctionChecker = (cleanContent: string, logger: Logger) => boolean;
@@ -28,9 +29,11 @@ export class FormatChecker extends Base {
     if (
       typeof config.checker === 'function' ||
       config.checker instanceof RegExp
-    )
+    ) {
       this.checker = config.checker;
-    else throw new Error(`invalid checker for ${this.name}`);
+    } else {
+      throw new TypeError(`invalid checker for ${this.name}`);
+    }
 
     this.examples = config.examples;
 
@@ -49,8 +52,9 @@ export class FormatChecker extends Base {
       !isTextChannel(message.channel) ||
       message.channel.name !== this.channelName ||
       message.hasThread
-    )
+    ) {
       return;
+    }
 
     const logger = this.bot.logger.child({
       id: randomUUID(),
@@ -95,7 +99,7 @@ export class FormatChecker extends Base {
           author.id,
         );
       }
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
       const channel = findTextChannelByName(message.guild!.channels, 'logs');
       channel.send(`Bonjour ${author},\n${warningContent}`);
     }

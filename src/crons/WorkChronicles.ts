@@ -1,8 +1,8 @@
-import { EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, SnowflakeUtil } from 'discord.js';
 import got from 'got';
 
-import { Cron, findTextChannelByName } from '../framework/index.js';
 import { KeyValue } from '../database/index.js';
+import { Cron, findTextChannelByName } from '../framework/index.js';
 
 export default new Cron({
   enabled: true,
@@ -33,6 +33,8 @@ export default new Cron({
           .setURL(chronicle.link)
           .setImage(chronicle.imageUrl),
       ],
+      enforceNonce: true,
+      nonce: SnowflakeUtil.generate().toString(),
     });
   },
 });

@@ -1,11 +1,13 @@
 import { randomUUID } from 'node:crypto';
 
 import { CronJob, CronTime } from 'cron';
-import { Client, EmbedBuilder } from 'discord.js';
-import { Logger } from 'pino';
+import { type Client, SnowflakeUtil } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
+import type { Logger } from 'pino';
 
-import { Base, BaseConfig } from './Base.js';
-import { Bot } from './Bot.js';
+import type { BaseConfig } from './Base.js';
+import { Base } from './Base.js';
+import type { Bot } from './Bot.js';
 import { findTextChannelByName } from './helpers.js';
 
 export type CronHandler = (context: CronContext) => Promise<void>;
@@ -78,6 +80,8 @@ export class Cron extends Base {
               .setDescription(`\`\`\`\n${error.stack}\n\`\`\``)
               .setColor('Red'),
           ],
+          enforceNonce: true,
+          nonce: SnowflakeUtil.generate().toString(),
         });
       } catch (error_) {
         logger.error(error_, 'failed to send error to #logs');
@@ -90,13 +94,15 @@ export class Cron extends Base {
       cronTime: this.schedule,
       onTick: () => {
         // Returns the theoretical date of the current tick (more precise than `new Date()`.
-        const date = cronJob.lastDate() as Date;
+        const date = cronJob.lastDate() ?? new Date();
         this.executeJob(date, bot);
       },
     });
 
     this.cronJob = cronJob;
     cronJob.start();
+
+    this.executeJob(new Date(), bot);
   }
 
   public stop(): void {
