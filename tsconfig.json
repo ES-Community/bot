@@ -3,6 +3,9 @@
   "include": ["src", "tests"],
   "compilerOptions": {
     "outDir": "build",
+    // need build src clean of .d.ts files because of auto import src/crons files
+    "declaration": false,
+    "declarationMap": false,
     "allowJs": true,
     "useUnknownInCatchVariables": false,
     "noUncheckedIndexedAccess": false
