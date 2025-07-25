@@ -15,13 +15,12 @@ test('getOfferedGames', async () => {
 
     if (!games) continue;
 
-    if (lastGames) {
-      if (
-        lastGames.length >= games.length &&
-        lastGames.every((g) => games.some((gg) => g.title === gg.title))
-      ) {
-        continue;
-      }
+    if (
+      lastGames &&
+      lastGames.length >= games.length &&
+      lastGames.every((g) => games.some((gg) => g.title === gg.title))
+    ) {
+      continue;
     }
     lastGames = games;
 
@@ -50,9 +49,9 @@ test('getOfferedGames', async () => {
 function generateDate(now = new Date()) {
   const nowMs = now.getTime();
 
-  return Array(7)
+  return Array.from({ length: 7 })
     .fill(0)
-    .map((v, i) => -i) // days
+    .map((v, index) => -index) // days
     .map((d) => d * oneDay) // days in ms
     .map((deltaMs) => new Date(nowMs + deltaMs));
 }
