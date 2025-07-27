@@ -112,6 +112,14 @@ interface EpicGamesProducts {
               }>;
             }>;
           };
+          promotions?: {
+            promotionalOffers?: Array<{
+              promotionalOffers: Array<{
+                startDate: string;
+                endDate: string;
+              }>;
+            }>;
+          };
         }>;
         paging: {
           total: number;
@@ -163,32 +171,6 @@ interface Game {
   discountEndDate: Date;
 }
 
-const OFFERED_GAMES_QUERY = `query searchStoreQuery($country: String!, $locale: String!, $count: Int) {
-  Catalog {
-    searchStore(category: "games", country: $country, locale: $locale, freeGame: true, onSale: true, count: $count) {
-      elements {
-        id
-        title
-        productSlug
-        catalogNs { mappings { pageSlug, pageType } }
-        offerMappings { pageSlug, pageType }
-        urlSlug
-        description
-        keyImages { type url }
-        price(country: $country) {
-          totalPrice {
-            fmtPrice(locale: $locale) { originalPrice }
-          }
-          lineOffers {
-            appliedRules { startDate endDate }
-          }
-        }
-      }
-      paging { total }
-    }
-  }
-}`;
-
 /**
  * Fetches offered games from the Epic Games GraphQL API. If there are any and they
  * were offered between the previous and current cron execution, returns them.
@@ -200,17 +182,9 @@ export async function getOfferedGames(
   logger: Logger,
 ): Promise<Game[]> {
   const { body } = await got<EpicGamesProducts>(
-    'https://graphql.epicgames.com/graphql',
+    'https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions',
     {
-      method: 'POST',
-      json: {
-        query: OFFERED_GAMES_QUERY,
-        variables: {
-          country: 'FR',
-          locale: 'fr',
-          count: 20,
-        },
-      },
+      method: 'GET',
       responseType: 'json',
     },
   );
@@ -227,19 +201,21 @@ export async function getOfferedGames(
 
   // Keep only the games that were offered in the last day.
   const games = (catalog.elements ?? []).filter((game) => {
-    const rule = game.price?.lineOffers?.[0]?.appliedRules?.[0];
-    if (!rule) return false;
+    const promotion =
+      game.promotions?.promotionalOffers?.[0]?.promotionalOffers?.[0];
+    if (!promotion) return false;
 
     const [startDate, endDate] = [
-      new Date(rule.startDate),
-      new Date(rule.endDate),
+      new Date(promotion.startDate),
+      new Date(promotion.endDate),
     ];
 
     return startDate.getTime() < nowTime && nowTime < endDate.getTime();
   });
 
   return games.map<Game>((game) => {
-    const discount = game.price.lineOffers[0].appliedRules[0];
+    const promotion =
+      game.promotions?.promotionalOffers?.[0]?.promotionalOffers?.[0];
     let slug =
       game.productSlug ||
       game.offerMappings?.find((mapping) => mapping.pageType === 'productHome')
@@ -282,8 +258,8 @@ export async function getOfferedGames(
       thumbnail,
       banner,
       originalPrice: game.price.totalPrice.fmtPrice.originalPrice,
-      discountStartDate: new Date(discount.startDate),
-      discountEndDate: new Date(discount.endDate),
+      discountStartDate: new Date(promotion?.startDate ?? Date.now()),
+      discountEndDate: new Date(promotion?.endDate ?? Date.now()),
     };
   });
 }
