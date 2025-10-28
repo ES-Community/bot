@@ -53,7 +53,7 @@ export default new Cron({
 
         message += `\n${line}`;
       }
-      if (message) {
+      if (message.trim()) {
         const m = await channel.send({
           content: message,
           enforceNonce: true,
