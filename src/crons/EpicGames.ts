@@ -101,6 +101,7 @@ interface EpicGamesProducts {
           urlSlug: string;
           price: {
             totalPrice: {
+              discountPrice?: number;
               fmtPrice: {
                 originalPrice: string;
               };
@@ -204,6 +205,9 @@ export async function getOfferedGames(
     const promotion =
       game.promotions?.promotionalOffers?.[0]?.promotionalOffers?.[0];
     if (!promotion) return false;
+
+    const price = game.price.totalPrice.discountPrice;
+    if (price !== 0) return false;
 
     const [startDate, endDate] = [
       new Date(promotion.startDate),
