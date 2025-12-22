@@ -64,6 +64,10 @@ export default new Cron({
               { name: 'Prix', value: `${game.originalPrice} → **Gratuit**` },
             )
             .setTimestamp(),
+          new EmbedBuilder({
+            title: 'Epic Games Mobile',
+            url: 'https://store.epicgames.com/fr/mobile',
+          }),
         ],
         enforceNonce: true,
         nonce: SnowflakeUtil.generate().toString(),
