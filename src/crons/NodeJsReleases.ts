@@ -1,8 +1,11 @@
 import got from 'got';
 
 import { KeyValue } from '../database/index.js';
-import { Cron, findTextChannelByName } from '../framework/index.js';
-import { SnowflakeUtil } from 'discord.js';
+import {
+  Cron,
+  findTextChannelByName,
+  sendToChannel,
+} from '../framework/index.js';
 
 export default new Cron({
   enabled: true,
@@ -25,10 +28,8 @@ export default new Cron({
     const channel = findTextChannelByName(context.client.channels, 'news');
 
     for (const release of entries) {
-      await channel.send({
+      await sendToChannel(channel, {
         content: `# Release ${release.title}\n\n<${release.link}>`,
-        enforceNonce: true,
-        nonce: SnowflakeUtil.generate().toString(),
       });
       const content = release.content.replaceAll('\r\n', '\n');
       const lines = content.split('\n');
@@ -36,11 +37,7 @@ export default new Cron({
       let message = '';
       for (const line of lines) {
         if (message.length + line.length > 2000) {
-          const m = await channel.send({
-            content: message,
-            enforceNonce: true,
-            nonce: SnowflakeUtil.generate().toString(),
-          });
+          const m = await sendToChannel(channel, { content: message });
           await m.suppressEmbeds(true);
 
           message = '';
@@ -54,19 +51,11 @@ export default new Cron({
         message += `\n${line}`;
       }
       if (message.trim()) {
-        const m = await channel.send({
-          content: message,
-          enforceNonce: true,
-          nonce: SnowflakeUtil.generate().toString(),
-        });
+        const m = await sendToChannel(channel, { content: message });
         await m.suppressEmbeds(true);
       }
 
-      await channel.send({
-        content: release.link,
-        enforceNonce: true,
-        nonce: SnowflakeUtil.generate().toString(),
-      });
+      await sendToChannel(channel, { content: release.link });
 
       await KeyValue.set('Last-Cron-Node.js', release.id); // update id in db
     }
