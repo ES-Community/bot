@@ -1,12 +1,7 @@
-import {
-  Cron,
-  findTextChannelByName,
-  sendToChannel,
-} from '../framework/index.ts';
+import { Cron, buildBasicCronHandle } from '../framework/index.ts';
 import got from 'got';
 import { parse } from 'node-html-parser';
 import { decode } from 'html-entities';
-import { KeyValue } from '../database/index.ts';
 import { EmbedBuilder } from 'discord.js';
 
 export default new Cron({
@@ -15,32 +10,21 @@ export default new Cron({
   description:
     'Vérifie toutes les 30 minutes si un nouveau strip de David Revoy est sorti',
   schedule: '5,35 * * * *',
-  async handle(context) {
-    const strip = await getLastDavidRevoyStrip();
-
-    // vérifie le strip trouvé avec la dernière entrée
-    const lastStrip = await KeyValue.get<string>('Last-Cron-DavidRevoy');
-    const stripStoreIdentity = strip?.id ?? null;
-    if (lastStrip === stripStoreIdentity) return; // skip si identique
-
-    await KeyValue.set('Last-Cron-DavidRevoy', stripStoreIdentity); // met à jour sinon
-
-    if (!strip) return; // skip si pas de strip
-
-    context.logger.info(`Found a new David Revoy strip`, strip);
-
-    const channel = findTextChannelByName(context.client.channels, 'gif');
-
-    await sendToChannel(channel, {
+  handle: buildBasicCronHandle({
+    key: 'Last-Cron-DavidRevoy',
+    targetChannelName: 'gif',
+    logMsg: 'Found a new David Revoy strip',
+    getLastEntry: getLastDavidRevoyStrip,
+    toMessage: (entry) => ({
       embeds: [
         new EmbedBuilder()
-          .setURL(strip.link)
-          .setTitle(strip.title)
-          .setImage(strip.imageUrl)
-          .setTimestamp(strip.date),
+          .setURL(entry.link)
+          .setTitle(entry.title)
+          .setImage(entry.imageUrl)
+          .setTimestamp(entry.date),
       ],
-    });
-  },
+    }),
+  }),
 });
 
 interface IDavidRevoyStrip {

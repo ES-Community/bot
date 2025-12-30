@@ -1,7 +1,7 @@
 import DB from './database.js';
 
 type JSONScalar = boolean | number | string | null;
-type JSONTypes = JSONScalar | JSONObject | JSONArray;
+export type JSONTypes = JSONScalar | JSONObject | JSONArray;
 interface JSONObject {
   [member: string]: JSONTypes;
 }
