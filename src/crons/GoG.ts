@@ -1,11 +1,15 @@
-import { EmbedBuilder, SnowflakeUtil } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
 import got from 'got';
 import { decode } from 'html-entities';
 import { parse } from 'node-html-parser';
 import type { Logger } from 'pino';
 
 import { KeyValue } from '../database/index.js';
-import { Cron, findTextChannelByName } from '../framework/index.js';
+import {
+  Cron,
+  findTextChannelByName,
+  sendToChannel,
+} from '../framework/index.js';
 
 const dateFmtOptions: Intl.DateTimeFormatOptions = {
   timeZone: 'Europe/Paris',
@@ -78,11 +82,7 @@ export default new Cron({
       embed.addFields({ name: 'Note', value: `⭐ ${game.rating}` });
     }
 
-    await channel.send({
-      embeds: [embed],
-      enforceNonce: true,
-      nonce: SnowflakeUtil.generate().toString(),
-    });
+    await sendToChannel(channel, { embeds: [embed] });
   },
 });
 

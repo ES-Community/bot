@@ -1,8 +1,12 @@
-import { Cron, findTextChannelByName } from '../framework/index.ts';
+import {
+  Cron,
+  findTextChannelByName,
+  sendToChannel,
+} from '../framework/index.ts';
 import got from 'got';
 import { parse } from 'node-html-parser';
 import { KeyValue } from '../database/index.ts';
-import { EmbedBuilder, SnowflakeUtil } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
 
 export default new Cron({
   enabled: true,
@@ -26,7 +30,7 @@ export default new Cron({
 
     const channel = findTextChannelByName(context.client.channels, 'gif');
 
-    await channel.send({
+    await sendToChannel(channel, {
       embeds: [
         new EmbedBuilder()
           .setURL(strip.link)
@@ -34,8 +38,6 @@ export default new Cron({
           .setImage(strip.imageUrl)
           .setTimestamp(strip.date),
       ],
-      enforceNonce: true,
-      nonce: SnowflakeUtil.generate().toString(),
     });
   },
 });

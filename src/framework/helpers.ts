@@ -1,4 +1,10 @@
-import type { Channel, ChannelManager, GuildChannelManager } from 'discord.js';
+import {
+  type Channel,
+  type ChannelManager,
+  type GuildChannelManager,
+  type MessageCreateOptions,
+  SnowflakeUtil,
+} from 'discord.js';
 import { TextChannel } from 'discord.js';
 
 export function findTextChannelByName(
@@ -19,4 +25,22 @@ export function findTextChannelByName(
 
 export function isTextChannel(channel: Channel): channel is TextChannel {
   return channel instanceof TextChannel;
+}
+
+/**
+ * Envoie un message dans un canal en mettant un nonce.
+ * Évite des race-conditions qui ré-envoient plusieurs fois le même message.
+ *
+ * @param channel
+ * @param message
+ */
+export function sendToChannel(
+  channel: TextChannel,
+  message: Omit<MessageCreateOptions, 'enforceNonce' | 'nonce'>,
+) {
+  return channel.send({
+    ...message,
+    enforceNonce: true,
+    nonce: SnowflakeUtil.generate().toString(),
+  });
 }

@@ -1,14 +1,14 @@
 import { randomUUID } from 'node:crypto';
 
 import { CronJob, CronTime } from 'cron';
-import { type Client, SnowflakeUtil } from 'discord.js';
+import type { Client } from 'discord.js';
 import { EmbedBuilder } from 'discord.js';
 import type { Logger } from 'pino';
 
 import type { BaseConfig } from './Base.js';
 import { Base } from './Base.js';
 import type { Bot } from './Bot.js';
-import { findTextChannelByName } from './helpers.js';
+import { findTextChannelByName, sendToChannel } from './helpers.js';
 
 export type CronHandler = (context: CronContext) => Promise<void>;
 
@@ -69,7 +69,8 @@ export class Cron extends Base {
     } catch (error) {
       logger.error(error, 'cron handler error');
       try {
-        await findTextChannelByName(bot.client.channels, 'logs').send({
+        const logsChannel = findTextChannelByName(bot.client.channels, 'logs');
+        await sendToChannel(logsChannel, {
           embeds: [
             new EmbedBuilder()
               .setTitle('Cron run failed')
@@ -80,8 +81,6 @@ export class Cron extends Base {
               .setDescription(`\`\`\`\n${error.stack}\n\`\`\``)
               .setColor('Red'),
           ],
-          enforceNonce: true,
-          nonce: SnowflakeUtil.generate().toString(),
         });
       } catch (error_) {
         logger.error(error_, 'failed to send error to #logs');

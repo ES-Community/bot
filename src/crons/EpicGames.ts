@@ -1,9 +1,13 @@
-import { EmbedBuilder, SnowflakeUtil } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
 import got from 'got';
 import type { Logger } from 'pino';
 
 import { KeyValue } from '../database/index.js';
-import { Cron, findTextChannelByName } from '../framework/index.js';
+import {
+  Cron,
+  findTextChannelByName,
+  sendToChannel,
+} from '../framework/index.js';
 
 const dateFmtOptions: Intl.DateTimeFormatOptions = {
   timeZone: 'Europe/Paris',
@@ -40,7 +44,7 @@ export default new Cron({
       if (game.thumbnail) message.setThumbnail(game.thumbnail);
       if (game.banner) message.setImage(game.banner);
 
-      await channel.send({
+      await sendToChannel(channel, {
         embeds: [
           message
             .setDescription(game.description)
@@ -69,8 +73,6 @@ export default new Cron({
             url: 'https://store.epicgames.com/fr/mobile',
           }),
         ],
-        enforceNonce: true,
-        nonce: SnowflakeUtil.generate().toString(),
       });
     }
   },

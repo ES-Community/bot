@@ -6,7 +6,11 @@ import type { Logger } from 'pino';
 import type { BaseConfig } from './Base.js';
 import { Base } from './Base.js';
 import type { Bot } from './Bot.js';
-import { findTextChannelByName, isTextChannel } from './helpers.js';
+import {
+  findTextChannelByName,
+  isTextChannel,
+  sendToChannel,
+} from './helpers.js';
 
 type FunctionChecker = (cleanContent: string, logger: Logger) => boolean;
 
@@ -101,7 +105,9 @@ export class FormatChecker extends Base {
       }
 
       const channel = findTextChannelByName(message.guild!.channels, 'logs');
-      channel.send(`Bonjour ${author},\n${warningContent}`);
+      void sendToChannel(channel, {
+        content: `Bonjour ${author},\n${warningContent}`,
+      });
     }
     logger.debug('warning message sent');
   }
