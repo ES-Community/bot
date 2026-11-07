@@ -12,8 +12,7 @@ import { Cron } from './Cron.js';
 import { FormatChecker } from './FormatChecker.js';
 
 function toPath(pathOrUrl: string | URL): string {
-  if (typeof pathOrUrl === 'string') return pathOrUrl;
-  return fileURLToPath(pathOrUrl);
+  return typeof pathOrUrl === 'string' ? pathOrUrl : fileURLToPath(pathOrUrl);
 }
 
 export interface BotOptions {
@@ -79,6 +78,7 @@ export class Bot {
       if (error.code === 'ENOENT') {
         throw new Error(
           `Failed to load "${name}" in ${directory}. Directory could not be read`,
+          { cause: error },
         );
       }
       throw error;

@@ -251,12 +251,12 @@ export async function getOfferedGames(
     let thumbnail = game.keyImages.find(
       (image) => image.type === 'Thumbnail',
     )?.url;
-    thumbnail = thumbnail && encodeURI(thumbnail);
+    thumbnail &&= encodeURI(thumbnail);
 
     let banner = game.keyImages.find(
       (image) => image.type === 'OfferImageWide',
     )?.url;
-    banner = banner && encodeURI(banner);
+    banner &&= encodeURI(banner);
 
     return {
       id: game.id,

@@ -79,7 +79,7 @@ interface WorkChronicle {
 export async function getLastChronicle(): Promise<WorkChronicle | null> {
   const {
     body: { posts },
-  } = await got<{posts: SubstackPost[]}>(
+  } = await got<{ posts: SubstackPost[] }>(
     'https://workchronicles.substack.com/api/v1/archive?sort=new&limit=1',
     { responseType: 'json', https: { rejectUnauthorized: false } },
   );

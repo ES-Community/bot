@@ -24,7 +24,7 @@ export default new Cron({
 
     if (!strip) return; // skip si pas de strip
 
-    context.logger.info(`Found a new XKCD strip`, strip);
+    context.logger.info(strip, `Found a new XKCD strip`);
 
     const channel = findTextChannelByName(context.client.channels, 'gif');
 
