@@ -22,7 +22,8 @@ export default new Cron({
 
     if (!strip) return; // skip si pas de strip
 
-    context.logger.info(`Found a new {turnoff.us} strip`, strip);
+    // eslint-disable-next-line unicorn/no-incorrect-template-string-interpolation
+    context.logger.info(strip, `Found a new {turnoff.us} strip`);
 
     const channel = findTextChannelByName(context.client.channels, 'gif');
 
@@ -61,7 +62,17 @@ export async function getLastTurnOffStrip(): Promise<ITurnOffStrip | null> {
   if (!item) return null;
 
   const description = item.querySelector('description');
-  const img = description?.querySelector('img');
+  let img = description?.querySelector('img') ?? null;
+  if (!img) {
+    const match = description?.innerHTML
+      .replaceAll('\n', '')
+      .match(/<!\[CDATA\[(?<node>.*)/);
+
+    if (match) {
+      const node = parse(match.groups?.node ?? '');
+      img = node.querySelector('img');
+    }
+  }
 
   return {
     id: item.querySelector('guid')?.textContent?.trim() ?? '',

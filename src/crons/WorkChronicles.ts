@@ -77,7 +77,9 @@ interface WorkChronicle {
  * Otherwise, or if the post does not contain any image URL, returns null.
  */
 export async function getLastChronicle(): Promise<WorkChronicle | null> {
-  const { body: posts } = await got<SubstackPost[]>(
+  const {
+    body: { posts },
+  } = await got<{ posts: SubstackPost[] }>(
     'https://workchronicles.substack.com/api/v1/archive?sort=new&limit=1',
     { responseType: 'json', https: { rejectUnauthorized: false } },
   );
