@@ -37,6 +37,7 @@ export default new Cron({
     const lastGame = await KeyValue.get<string>('Last-Cron-GOG-Found');
     if (gameStoreIdentity === lastGame) return; // skip si identique
 
+    // eslint-disable-next-line unicorn/prefer-combined-guards
     if (!game) return; // skip si pas de jeu
 
     await KeyValue.set('Last-Cron-GOG-Found', gameStoreIdentity); // met à jour sinon

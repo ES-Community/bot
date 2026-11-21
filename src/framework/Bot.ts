@@ -10,10 +10,10 @@ import { pino, transport } from 'pino';
 import type { Base, BaseConfig } from './Base.js';
 import { Cron } from './Cron.js';
 import { FormatChecker } from './FormatChecker.js';
+import { StartHook } from './StartHook.ts';
 
 function toPath(pathOrUrl: string | URL): string {
-  if (typeof pathOrUrl === 'string') return pathOrUrl;
-  return fileURLToPath(pathOrUrl);
+  return typeof pathOrUrl === 'string' ? pathOrUrl : fileURLToPath(pathOrUrl);
 }
 
 export interface BotOptions {
@@ -30,6 +30,10 @@ export interface BotOptions {
    * Directory that contains the `FormatChecker` definitions.
    */
   formatCheckers?: string | URL;
+  /**
+   * Directory that contains the `StartHook` definitions.
+   */
+  startHooks?: string | URL;
 }
 
 type Constructor<T extends Base, U extends BaseConfig> = new (config: U) => T;
@@ -40,6 +44,7 @@ export class Bot {
   private _client: Client | null;
   private crons: Cron[] = [];
   private formatCheckers: FormatChecker[] = [];
+  private startHooks: StartHook[] = [];
 
   public readonly logger: Logger;
 
@@ -65,6 +70,13 @@ export class Bot {
         FormatChecker,
       );
     }
+    if (this.options.startHooks) {
+      this.startHooks = await this.loadDirectory(
+        toPath(this.options.startHooks),
+        'start-hooks',
+        StartHook,
+      );
+    }
   }
 
   private async loadDirectory<T extends Base, U extends BaseConfig>(
@@ -79,6 +91,7 @@ export class Bot {
       if (error.code === 'ENOENT') {
         throw new Error(
           `Failed to load "${name}" in ${directory}. Directory could not be read`,
+          { cause: error },
         );
       }
       throw error;
@@ -133,6 +146,18 @@ export class Bot {
     for (const formatChecker of this.formatCheckers) formatChecker.stop(this);
   }
 
+  private startStartHooks() {
+    void Promise.allSettled(
+      this.startHooks.map((startHook) => startHook.start(this)),
+    );
+  }
+
+  private stopStartHooks() {
+    void Promise.allSettled(
+      this.startHooks.map((startHook) => startHook.stop(this)),
+    );
+  }
+
   /**
    * Returns the discord.js Client instance.
    * The bot must be started first.
@@ -162,6 +187,7 @@ export class Bot {
       ]);
       this.startCrons();
       this.startFormatCheckers();
+      this.startStartHooks();
     } catch (error) {
       this._client = null;
       throw error;
@@ -177,6 +203,7 @@ export class Bot {
     }
     this.stopCrons();
     this.stopFormatCheckers();
+    this.stopStartHooks();
     this._client.destroy();
     this._client = null;
   }

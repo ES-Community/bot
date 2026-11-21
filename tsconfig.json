@@ -2,6 +2,8 @@
   "extends": "@zakodium/tsconfig",
   "include": ["src", "tests"],
   "compilerOptions": {
+    "lib": ["ES2025"],
+    "target": "ES2025",
     "outDir": "build",
     // need build src clean of .d.ts files because of auto import src/crons files
     "declaration": false,

@@ -20,7 +20,7 @@ export default new Cron({
     // if no releases return
     if (entries.length === 0) return;
 
-    context.logger.info(`Found new Node.js releases`, entries);
+    context.logger.info(entries, `Found new Node.js releases`);
 
     const channel = findTextChannelByName(context.client.channels, 'news');
 
@@ -48,6 +48,7 @@ export default new Cron({
 
         // Remove the Commits section and after.
         if (/#{1,6}\s+Commits?/.test(line)) {
+          // eslint-disable-next-line unicorn/no-break-in-nested-loop
           break;
         }
 
@@ -110,7 +111,8 @@ export async function getLastNodeReleases(
   return (
     releases
       // recent to old (title is a better attribute than date, because it's the updated field)
-      .sort((a, b) => b.published_at.localeCompare(a.published_at))
+      .toSorted((a, b) => b.published_at.localeCompare(a.published_at))
+      .values()
       .filter((release) => {
         if (release.id === skipAfterId) {
           shouldSkip = true;
@@ -129,6 +131,7 @@ export async function getLastNodeReleases(
           image: release.author.avatar_url,
         },
       }))
+      .toArray()
       .toReversed()
   );
 }

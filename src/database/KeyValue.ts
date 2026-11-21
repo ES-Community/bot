@@ -73,12 +73,10 @@ export const KeyValue = {
       .select('value')
       .where('key', key)
       .first();
-    if (!item) return item;
-
-    return JSON.parse(item.value);
+    return item ? JSON.parse(item.value) : item;
   },
 
-  /// the number returned is the row id from sqlite
+  /// the number returned is the row id from SQLite
   async set(key: string, value: JSONTypes): Promise<number> {
     return KeyValueStore<IKeyValue>()
       .insert({

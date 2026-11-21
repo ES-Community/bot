@@ -42,13 +42,15 @@ export class FormatChecker extends Base {
   }
 
   isMessageValid(cleanContent: string, logger: Logger) {
-    if (this.checker instanceof RegExp) return this.checker.test(cleanContent);
-    return this.checker(cleanContent, logger);
+    return this.checker instanceof RegExp
+      ? this.checker.test(cleanContent)
+      : this.checker(cleanContent, logger);
   }
 
+  // eslint-disable-next-line unicorn/prefer-private-class-fields
   async _messageHandler(message: Message): Promise<void> {
-    if (this.bot === undefined) return;
     if (
+      this.bot === undefined ||
       !isTextChannel(message.channel) ||
       message.channel.name !== this.channelName ||
       message.hasThread
@@ -72,8 +74,8 @@ export class FormatChecker extends Base {
     );
 
     await message.delete();
-    const plural = this.examples !== undefined && this.examples.length > 1;
-    const pluralSuffix = plural ? 's' : '';
+    const isPlural = this.examples !== undefined && this.examples.length > 1;
+    const pluralSuffix = isPlural ? 's' : '';
     const warningContent = [
       `Le message que vous avez posté dans ${message.channel} est incorrectement formaté, il a donc été supprimé.`,
       'Pour rappel, voici le message que vous aviez envoyé :',
@@ -82,7 +84,7 @@ export class FormatChecker extends Base {
         ? []
         : [
             `Voici ${
-              plural ? 'des' : 'un'
+              isPlural ? 'des' : 'un'
             } exemple${pluralSuffix} de message${pluralSuffix} correctement formaté${pluralSuffix} :`,
             ...this.examples.map((example) => `\`\`\`\n${example}\`\`\``),
           ]),
@@ -106,6 +108,7 @@ export class FormatChecker extends Base {
     logger.debug('warning message sent');
   }
 
+  // eslint-disable-next-line unicorn/prefer-private-class-fields
   async _messageUpdateHandler(
     _oldMessage: Message | PartialMessage,
     newMessage: Message | PartialMessage,

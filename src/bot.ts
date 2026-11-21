@@ -7,6 +7,7 @@ const bot = new Bot({
   token: process.env.DISCORD_TOKEN,
   crons: new URL('crons', import.meta.url),
   formatCheckers: new URL('format-checkers', import.meta.url),
+  startHooks: new URL('start-hooks', import.meta.url),
 });
 
 await bot.start();
