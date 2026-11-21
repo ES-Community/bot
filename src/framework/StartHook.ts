@@ -59,6 +59,7 @@ export class StartHook extends Base {
       logger.error(error, `${stage} hook handler error`);
 
       try {
+        const codeBlock = '```';
         await findTextChannelByName(bot.client.channels, 'logs').send({
           embeds: [
             new EmbedBuilder()
@@ -67,7 +68,7 @@ export class StartHook extends Base {
                 { name: 'Name', value: this.name, inline: true },
                 { name: 'Run id', value: id, inline: true },
               )
-              .setDescription('```\n' + error.stack + '\n```')
+              .setDescription(`${codeBlock}\n${error.stack}\n${codeBlock}`)
               .setColor('Red'),
           ],
           enforceNonce: true,
